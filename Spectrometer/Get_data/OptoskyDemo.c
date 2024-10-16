@@ -5,6 +5,23 @@
 
 INT_8U *library_version;
 
+
+
+int main() {
+    char input[100];
+
+    // Бесконечный цикл, пока не будет закрыт stdin
+    while (fgets(input, sizeof(input), stdin)) {
+        // Обработка данных
+        printf("Processed: %s", input);
+        fflush(stdout);  // Очистка буфера вывода, чтобы данные вернулись в Python
+    }
+
+    return 0;
+}
+
+/*
+
 void external_trigger_info(INT_16U count, INT_16U *spectrum)
 {
 	INT_16U index = 0;
@@ -314,5 +331,4 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-
-
+*/

@@ -1,4 +1,10 @@
 import  subprocess
+import sh
+
+password = '90iopAAPoi09.'
+
+# with sh.contrib.sudo(password, _with=True):
+#     print(ls("/root"))
 
 get_data_pass = '../Get_data/OptoskyDemo'
 
@@ -20,9 +26,10 @@ def send_command(input_data):
     return output.strip()  # Возврат строки без символов новой строки
 
 
-# Пример многократного взаимодействия
-for i in range(10):
-    data = f"input_data_{i}"  # Ваши данные для передачи
+
+
+for i in range(1):
+    data = f"0"  # Ваши данные для передачи
     result = send_command(data)  # Передача данных в программу
     print(f"Result for {data}: {result}")
 

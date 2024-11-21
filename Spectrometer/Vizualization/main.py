@@ -1,40 +1,63 @@
-import  subprocess
-import sh
-
-password = '90iopAAPoi09.'
-
-# with sh.contrib.sudo(password, _with=True):
-#     print(ls("/root"))
-
-get_data_pass = '../Get_data/OptoskyDemo'
+import io
+import subprocess
+import os
 
 
-# Запуск программы C один раз
-process = subprocess.Popen(
+# название исполняемого файла на C
+get_data_pass = 'OptoskyDemo'
+
+# рабочая директори
+working_directory = '../Get_data'
+
+# Убедитесь, что файл существует в указанной директории
+if os.path.isfile(f'./{working_directory}/{get_data_pass}'):
+    print("Файл найден")
+else:
+    print(f"Файл не найден, проверьте путь")
+
+# перейти в директорию
+os.chdir(working_directory)
+
+file = open("text1.txt", "w")
+
+# Запуск программы на C
+process_set = subprocess.Popen(
     [f'./{get_data_pass}'],
     stdin=subprocess.PIPE,  # Для передачи данных через стандартный ввод
     stdout=subprocess.PIPE,  # Для получения данных через стандартный вывод
     stderr=subprocess.PIPE,  # Для получения ошибок
-    text=True   # Для работы с текстовыми строками
+    text=True,   # Для работы с текстовыми строками
+    cwd=working_directory
 )
 
-# Функция для отправки данных и получения ответа
-def send_command(input_data):
-    process.stdin.write(f"{input_data}\n")  # Отправка данных
-    process.stdin.flush()  # Очистка буфера, чтобы данные дошли до процесса
-    output = process.stdout.readline()  # Чтение строки из stdout
-    return output.strip()  # Возврат строки без символов новой строки
+# Функция для отправки команды и чтения полного ответа
+def send_command(input_data, process=process_set):        # Отправляем команду
+    process.stdin.write(f"{input_data}\n")
+    # Очистка буфера ввода
+    process.stdin.flush()
+
+    # Чтение троки stdout
+    output = [] # = process.stdout.readline()
+    while True:
+        line = process.stdout.readline()
+        if line == '' and process.poll() is not None:
+            break
+        if line:
+            output.append(line.strip())
+            print(line)
+
+    return '\n'.join(output)
 
 
-
-
+# Отправка команд и получение ответа
 for i in range(1):
-    data = f"0"  # Ваши данные для передачи
+    data = f"input_data_{i}"  # Ваши данные для передачи
     result = send_command(data)  # Передача данных в программу
     print(f"Result for {data}: {result}")
 
 
-# Завершение процесса, если он больше не нужен
-process.stdin.close()
-process.stdout.close()
-process.terminate()
+# Закрытие потока stdin и завершение процесса
+process_set.stdin.close()
+process_set.stdout.close()
+process_set.stderr.close()
+process_set.terminate()

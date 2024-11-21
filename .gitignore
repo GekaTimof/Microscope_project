@@ -1,6 +1,12 @@
 # Created by https://www.toptal.com/developers/gitignore/api/linux,c,python,c++,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,c,python,c++,pycharm
 
+### Test datas ###
+
+*test_data/
+
+
+
 ### C ###
 # Prerequisites
 *.d

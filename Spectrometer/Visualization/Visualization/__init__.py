@@ -1,1 +1,1 @@
-from get_data import get_data_from_file
+from get_data import get_data_from_file, get_data_from_massage

@@ -1,6 +1,20 @@
 import os
 import sys
 import pexpect
+import numpy as np
+import time
+# from Visualization import get_data_from_massage
+lines_num_X = 2048
+lines_num_Y = 1044
+
+def get_data_from_massage(massage: str):
+    data = np.zeros(lines_num_X)
+    i = 0
+    for line in massage.splitlines():
+        if line.strip():
+            data[i] = line.split()[-1]
+            i += 1
+    return data
 
 # Полный путь к исполняемому файлу
 working_directory = os.path.abspath("../Get_data")
@@ -8,15 +22,16 @@ working_directory = os.path.abspath("../Get_data")
 get_data_pass = os.path.join(working_directory, "OptoskyDemo")
 
 # Запускаем процесс
-child = pexpect.spawn(get_data_pass, cwd=working_directory, encoding="utf-8", timeout=10)
+child = pexpect.spawn(f'{get_data_pass}', cwd=working_directory, encoding="utf-8", timeout=10)
+
 
 # try to start script (this script tp get data from spectrometer)
 try:
     # Читаем вывод до появления "Enter :"
     child.expect("Enter :", timeout=5)
-    print(child.before)  # Вывод меню
+    print("Скрипт запущен")
 except:
-    print("Нет ответа од спектрометра, проверьте подключение")
+    print("Нет ответа от спектрометра, проверьте подключение")
     sys.exit(1)
 
 # try to connect to spectrometer
@@ -31,7 +46,19 @@ except:
 
 # Читаем ответ
 child.expect("Enter :")
-print(child.before)  # Вывод после команды
+
+print("Пустой запуск")
+child.sendline("23")
+child.expect("Enter :")
+
+print("Настоящий запуск")
+child.sendline("23")
+child.expect("Wavelength")
+
+child.expect("====")
+data = get_data_from_massage(child.before)
+print(data)
+child.expect("Enter :")
 
 # Завершаем программу (отправляем команду выхода "100")
 print("Завершаем сеанс")

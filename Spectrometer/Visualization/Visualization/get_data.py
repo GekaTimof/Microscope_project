@@ -17,5 +17,14 @@ def get_data_from_file(file_name: str):
             # print(data[i])
     return data
 
+def get_data_from_massage(massage: str):
+    data = np.zeros(lines_num)
+    i = 0
+    for line in massage:
+        if line:
+            data[i] = line.split()[-1]
+            i += 1
+    return data
+
 # data = get_data_from_file(file_pass)
 # print(data)

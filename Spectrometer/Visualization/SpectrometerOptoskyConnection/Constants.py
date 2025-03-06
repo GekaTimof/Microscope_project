@@ -14,3 +14,9 @@ Accumulation_time = 10
 # Parameters for spectrometer simulating with test data
 Fake_spreading_range = 300
 lines_num = 1024
+
+# list of all Optosky spectrometer commands
+OptoskySpectrometerCommands = {}
+
+
+

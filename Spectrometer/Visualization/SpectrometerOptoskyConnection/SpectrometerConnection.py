@@ -4,6 +4,7 @@ import pexpect
 import numpy as np
 
 from Constants import Spectrometer_directory_path, Spectrometer_name, Accumulation_time, X_len, Y_len
+from Constants import OptoskySpectrometerCommands as Commands
 
 # class that contain spectrometer connection
 class SpectrometerConnection():

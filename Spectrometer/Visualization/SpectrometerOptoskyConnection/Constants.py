@@ -7,8 +7,9 @@ Spectrometer_directory_path = "Get_data"
 Spectrometer_name = "OptoskyDemo"
 
 # Spectrometer params (will be automated)
-lines_num_X = 2048
-lines_num_Y = 1044
+X_len = 2048
+Y_len = 1044
+Accumulation_time = 10
 
 # Parameters for spectrometer simulating with test data
 Fake_spreading_range = 300

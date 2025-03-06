@@ -3,9 +3,9 @@ import sys
 import pexpect
 import numpy as np
 
-from Constants import Spectrometer_directory_path, Spectrometer_name
+from Constants import Spectrometer_directory_path, Spectrometer_name, Accumulation_time, X_len, Y_len
 
-
+# class that contain spectrometer connection
 class SpectrometerConnection():
     def __init__(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,10 +34,18 @@ class SpectrometerConnection():
             raise Exception("No answer from spectrometer. (Check spectrometer connection, check spectrometer script access rights")
             # TODO add correct Exception
 
+        # set start accumulation time
+        self.accumulation_time: int = Accumulation_time
+        # set X coordinates length
+        self.x_len: int = X_len
+        # set Y coordinates length
+        self.y_len: int = Y_len
 
     # function return spectrometer working_directory
     def get_working_directory(self):
         return str(self.working_directory)
+
+
 
 
     # function send one command to spectrometer

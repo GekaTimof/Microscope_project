@@ -4,10 +4,12 @@ import pexpect
 import numpy as np
 
 from Constants import Spectrometer_directory_path, Spectrometer_name, Accumulation_time, X_len, Y_len
-from Constants import OptoskySpectrometerCommands as Commands
+from Constants import OptoskySpectrometerCommands
 
 # class that contain spectrometer connection
 class SpectrometerConnection():
+    commands = OptoskySpectrometerCommands
+
     def __init__(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         script_dir = os.path.dirname(base_dir)
@@ -44,36 +46,88 @@ class SpectrometerConnection():
 
     # function return spectrometer working_directory
     def get_working_directory(self):
-        return str(self.working_directory)
+        return self.working_directory
 
 
+    # function return spectrometer accumulation time
+    def get_accumulation_time(self):
+        return self.accumulation_time
+
+
+    # function set spectrometer accumulation time
+    def set_accumulation_time(self, accumulation_time: int):
+        if accumulation_time > 0:
+            self.accumulation_time = accumulation_time
+        else:
+            raise Exception(f"an able to set accumulation_time = {accumulation_time}")
+            # TODO add correct Exception
+
+
+    # # function send one command to spectrometer
+    # def send_command(self, command: str, expect_answer: str):
+    #     try:
+    #         # send command
+    #         self.child.sendline("0")
+    #         # wait for answer
+    #         self.child.expect(f"{expect_answer}", timeout=5)
+    #         print(f"{command} command was success")
+    #     except:
+    #         raise Exception(f"No answer from spectrometer for {command} command")
+    #         # TODO add correct Exception
+
+
+    # # function send one command to spectrometer and return entire text up to expect_answer
+    # def send_command_with_response(self, command: str, expect_answer: str):
+    #     try:
+    #         # send command
+    #         self.child.sendline("0")
+    #         # wait for answer
+    #         self.child.expect(f"{expect_answer}", timeout=5)
+    #         data = self.child.before
+    #         print(f"{command} command was success")
+    #         return data
+    #     except:
+    #         raise Exception(f"No answer from spectrometer for {command} command")
+    #         # TODO add correct Exception
 
 
     # function send one command to spectrometer
-    def send_command(self, command: str, expect_answer: str):
+    def send_command(self, command: str):
+        self.child.sendline(command)
+        return self
+
+
+    # function trying to find expect_answer in spectrometer text flow
+    def wait_answer(self,  expect_answer: str):
         try:
-            # send command
-            self.child.sendline("0")
             # wait for answer
             self.child.expect(f"{expect_answer}", timeout=5)
-            print(f"{command} command was success")
         except:
-            raise Exception(f"No answer from spectrometer for {command} command")
+            raise Exception(f"No answer {expect_answer} from spectrometer")
             # TODO add correct Exception
 
-    # function send one command to spectrometer and return entire text up to expect_answer
-    def send_command_with_response(self, command: str, expect_answer: str):
+
+    # function trying to find expect_answer in spectrometer text flow and return all test before it
+    def wait_answer_with_response(self,  expect_answer: str):
         try:
-            # send command
-            self.child.sendline("0")
             # wait for answer
             self.child.expect(f"{expect_answer}", timeout=5)
+            # get response
             data = self.child.before
-            print(f"{command} command was success")
             return data
         except:
-            raise Exception(f"No answer from spectrometer for {command} command")
+            raise Exception(f"No answer {expect_answer} from spectrometer")
             # TODO add correct Exception
+
+
+
+    # function
+    def open_spectrometer(self):
+        self.send_command()
+
+
+        return self
+
 
 
 if __name__ == "__main__":

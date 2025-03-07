@@ -16,7 +16,16 @@ Fake_spreading_range = 300
 lines_num = 1024
 
 # list of all Optosky spectrometer commands
-OptoskySpectrometerCommands = {}
+# key - name of command,
+# val[0] - command id,
+# val[1] - contain array or key phrases to extract values from request
+# TODO add val[2] - command errors messages
+OptoskySpectrometerCommands = {
+    "open_spectrometer": ("0", ["Enter :"]),
+    "get_wavelength_range": ("23", ["Pixel  Wavelength", "=====", "Enter :"]),
+    "get_dark_spectrum": ("30", [""]),
+    "get_spectrum": ("31", ["time(ms) :", "Enter :"]),
+}
 
 
 

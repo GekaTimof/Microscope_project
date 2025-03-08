@@ -71,34 +71,6 @@ class SpectrometerConnection:
             # TODO add correct Exception
 
 
-    # # function send one command to spectrometer
-    # def send_command(self, command: str, expect_answer: str):
-    #     try:
-    #         # send command
-    #         self.process.sendline("0")
-    #         # wait for answer
-    #         self.process.expect(f"{expect_answer}", timeout=5)
-    #         print(f"{command} command was success")
-    #     except:
-    #         raise Exception(f"No answer from spectrometer for {command} command")
-    #         # TODO add correct Exception
-
-
-    # # function send one command to spectrometer and return entire text up to expect_answer
-    # def send_command_with_response(self, command: str, expect_answer: str):
-    #     try:
-    #         # send command
-    #         self.process.sendline("0")
-    #         # wait for answer
-    #         self.process.expect(f"{expect_answer}", timeout=5)
-    #         data = self.process.before
-    #         print(f"{command} command was success")
-    #         return data
-    #     except:
-    #         raise Exception(f"No answer from spectrometer for {command} command")
-    #         # TODO add correct Exception
-
-
     # function send one command to spectrometer
     def send_command(self, command: str):
         self.process.sendline(command)
@@ -187,7 +159,6 @@ class SpectrometerConnection:
         return self
 
 
-
     # function to set current spectrum
     def  get_current_spectrum(self):
         # get command parameters
@@ -211,7 +182,6 @@ class SpectrometerConnection:
         # skip before next request
         self.wait_for_response(expected_answers[3])
         return self
-
 
 
 if __name__ == "__main__":

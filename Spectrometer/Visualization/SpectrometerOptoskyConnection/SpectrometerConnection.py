@@ -3,14 +3,14 @@ import sys
 import pexpect
 import numpy as np
 
-from Constants import Spectrometer_directory_path, Spectrometer_name, Accumulation_time, X_len, Y_len
+from Constants import Spectrometer_directory_path, Spectrometer_name, Integral_time, Wavelength_len, Spectrum_len
 from Constants import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
 class SpectrometerConnection:
     def __init__(self):
         # set dict os spectrometer commands
-        # {"key": ("id", [response_1, response_2, ...])}
+        # {"key": ("id", [key_text_1, key_text_2, ...])}
         self.Commands = OptoskySpectrometerCommands
 
         # set spectrometer commands
@@ -19,7 +19,19 @@ class SpectrometerConnection:
         self.Get_dark_spectrum = Command_get_dark_spectrum
         self.Get_current_spectrum = Command_get_current_spectrum
 
-        # set directories
+        # set start accumulation time
+        self.integral_time: int = Integral_time
+
+        # set wavelength len and empty wavelength array
+        self.wavelength_len: int = Wavelength_len
+        self.wavelength = np.zeros(self.wavelength_len)
+
+        # set spectrum len and empty spectrum array
+        self.spectrum_len: int = Spectrum_len
+        self.current_spectrum = np.zeros(self.spectrum_len)
+        self.dark_spectrum = np.zeros(self.spectrum_len)
+
+        # find directories
         base_dir = os.path.dirname(os.path.abspath(__file__))
         script_dir = os.path.dirname(base_dir)
         project_dir = os.path.dirname(script_dir)
@@ -35,22 +47,8 @@ class SpectrometerConnection:
             raise FileNotFoundError(f"Spectrometer script not found: {self.spectrometer_path}")
 
         # set spectrometer connection proses
-        self.child = pexpect.spawn(f'{self.spectrometer_path}', cwd=self.working_directory, encoding="utf-8", timeout=10)
+        self.process = pexpect.spawn(f'{self.spectrometer_path}', cwd=self.working_directory, encoding="utf-8", timeout=10)
 
-        # try:
-        #     # read output before "Enter :" appears
-        #     self.child.expect("Enter :", timeout=5)
-        #     print("Connection was success")
-        # except:
-        #     raise Exception("No answer from spectrometer. (Check spectrometer connection, check spectrometer script access rights")
-        #     # TODO add correct Exception
-
-        # set start accumulation time
-        self.accumulation_time: int = Accumulation_time
-        # set X coordinates length
-        self.x_len: int = X_len
-        # set Y coordinates length
-        self.y_len: int = Y_len
 
 
 
@@ -60,16 +58,16 @@ class SpectrometerConnection:
 
 
     # function return spectrometer accumulation time
-    def get_accumulation_time(self):
-        return self.accumulation_time
+    def get_integral_time(self):
+        return self.integral_time
 
 
     # function set spectrometer accumulation time
-    def set_accumulation_time(self, accumulation_time: int):
-        if accumulation_time > 0:
-            self.accumulation_time = accumulation_time
+    def set_integral_time(self, new_integral_time: int):
+        if new_integral_time > 0:
+            self.integral_time = new_integral_time
         else:
-            raise Exception(f"an able to set accumulation_time = {accumulation_time}")
+            raise Exception(f"an able to set integral_time = {new_integral_time}")
             # TODO add correct Exception
 
 
@@ -77,9 +75,9 @@ class SpectrometerConnection:
     # def send_command(self, command: str, expect_answer: str):
     #     try:
     #         # send command
-    #         self.child.sendline("0")
+    #         self.process.sendline("0")
     #         # wait for answer
-    #         self.child.expect(f"{expect_answer}", timeout=5)
+    #         self.process.expect(f"{expect_answer}", timeout=5)
     #         print(f"{command} command was success")
     #     except:
     #         raise Exception(f"No answer from spectrometer for {command} command")
@@ -90,10 +88,10 @@ class SpectrometerConnection:
     # def send_command_with_response(self, command: str, expect_answer: str):
     #     try:
     #         # send command
-    #         self.child.sendline("0")
+    #         self.process.sendline("0")
     #         # wait for answer
-    #         self.child.expect(f"{expect_answer}", timeout=5)
-    #         data = self.child.before
+    #         self.process.expect(f"{expect_answer}", timeout=5)
+    #         data = self.process.before
     #         print(f"{command} command was success")
     #         return data
     #     except:
@@ -103,7 +101,7 @@ class SpectrometerConnection:
 
     # function send one command to spectrometer
     def send_command(self, command: str):
-        self.child.sendline(command)
+        self.process.sendline(command)
         print(f"command - '{command}' has been sent")
         return self
 
@@ -112,7 +110,7 @@ class SpectrometerConnection:
     def wait_for_response(self,  expect_answer: str, waiting_time: int = 5):
         try:
             # wait for answer
-            self.child.expect(f"{expect_answer}", timeout=waiting_time)
+            self.process.expect(f"{expect_answer}", timeout=waiting_time)
             print(f"answer - '{expect_answer}' was received")
         except:
             raise Exception(f"No answer '{expect_answer}' from spectrometer")
@@ -120,25 +118,99 @@ class SpectrometerConnection:
 
 
     # function trying to find expect_answer in spectrometer text flow and return all test before it
-    def read_response_before(self,  expect_answer: str, waiting_time: int = 5):
+    def read_until_response(self,  expect_answer: str, waiting_time: int = 5):
         # wait for answer
         self.wait_for_response(expect_answer, waiting_time=waiting_time)
 
         # get response
-        data = self.child.before
+        data = self.process.before
         return data
 
 
     # function to connect to spectrometer
     def open_spectrometer(self):
+        # get command parameters
+        command_id = self.Commands[self.Open_spectrometer][0]
+        expected_answers = self.Commands[self.Open_spectrometer][1]
+
         # try to connect
-        self.send_command(self.Commands[self.Open_spectrometer][0])
-        # check connection
-        self.wait_for_response(self.Commands[self.Open_spectrometer][1][0])
-        # skip Optosky specification
-        self.wait_for_response(self.Commands[self.Open_spectrometer][1][1])
+        self.send_command(command_id)
+        # checking connection
+        self.wait_for_response(expected_answers[0])
+        # skip before next request
+        self.wait_for_response(expected_answers[1])
         return self
 
+
+    # function to set wavelength range
+    def  get_wavelength_range(self):
+        # get command parameters
+        command_id = self.Commands[self.Get_wavelength_range][0]
+        expected_answers = self.Commands[self.Get_wavelength_range][1]
+
+        # send command
+        self.send_command(command_id)
+
+        # checking that the wavelength range has been received
+        self.wait_for_response(expected_answers[0])
+        # get data from response
+        data = self.read_until_response(expected_answers[1])
+        # TODO set wavelength_range
+
+        # skip before next request
+        self.wait_for_response(expected_answers[2])
+        return self
+
+
+    # function to set dark spectrum
+    def  get_dark_spectrum(self):
+        # get command parameters
+        command_id = self.Commands[self.Get_dark_spectrum][0]
+        expected_answers = self.Commands[self.Get_dark_spectrum][1]
+
+        # send command
+        self.send_command(command_id)
+
+        # wait for integral time request
+        self.wait_for_response(expected_answers[0])
+        # send integral time
+        self.send_command(str(self.integral_time))
+
+        # checking that the integral time has been set and data has been received
+        self.wait_for_response(expected_answers[1])
+        # get data from response
+        data = self.read_until_response(expected_answers[2])
+        # TODO set dark_spectrum
+
+        # skip before next request
+        self.wait_for_response(expected_answers[3])
+        return self
+
+
+
+    # function to set current spectrum
+    def  get_current_spectrum(self):
+        # get command parameters
+        command_id = self.Commands[self.Get_current_spectrum][0]
+        expected_answers = self.Commands[self.Get_current_spectrum][1]
+
+        # send command
+        self.send_command(command_id)
+
+        # wait for integral time request
+        self.wait_for_response(expected_answers[0])
+        # send integral time
+        self.send_command(str(self.integral_time))
+
+        # checking that the integral time has been set and data has been received
+        self.wait_for_response(expected_answers[1])
+        # get data from response
+        data = self.read_until_response(expected_answers[2])
+        # TODO set current_spectrum (real spectrum - dark spectrum)
+
+        # skip before next request
+        self.wait_for_response(expected_answers[3])
+        return self
 
 
 

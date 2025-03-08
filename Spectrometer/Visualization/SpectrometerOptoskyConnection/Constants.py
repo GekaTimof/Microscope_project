@@ -6,11 +6,6 @@ Y_file_path = "../test_data/Y_data.txt"
 Spectrometer_directory_path = "Get_data"
 Spectrometer_name = "OptoskyDemo"
 
-# Spectrometer params (will be automated)
-X_len = 2048
-Y_len = 1044
-Accumulation_time = 10
-
 # Parameters for spectrometer simulating with test data
 Fake_spreading_range = 300
 lines_num = 1024
@@ -29,7 +24,11 @@ Command_get_current_spectrum = "get_current_spectrum"
 OptoskySpectrometerCommands = {
     Command_open_spectrometer: ("0", ["Open spectrometer success", "Enter :"]),
     Command_get_wavelength_range: ("23", ["Pixel  Wavelength", "=====", "Enter :"]),
-    Command_get_dark_spectrum: ("30", [""]),
-    Command_get_current_spectrum: ("31", ["time(ms) :", "Enter :"]),
+    Command_get_dark_spectrum: ("30", ["time(ms) :", "=====", "Enter :"]),
+    Command_get_current_spectrum: ("31", ["time(ms) :", "=====", "Enter :"]),
 }
 
+# Spectrometer params (will be automated)
+Wavelength_len = 2048
+Spectrum_len = 1044
+Integral_time = 10

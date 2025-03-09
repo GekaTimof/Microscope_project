@@ -6,8 +6,10 @@ from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon
 
+from SpectrometerOptoskyConnection import SpectrometerConnection
+
+# visual_testing function and links for test data
 from SpectrometerOptoskyConnection import get_data_from_file
-# links for test data
 from SpectrometerOptoskyConnection import X_file_path, Y_file_path
 
 
@@ -18,6 +20,7 @@ class DataThread(QThread):
         super().__init__()
         self.testing = False
         self.running = True
+        self.connection = SpectrometerConnection()
 
     # switch testing mode toggle
     def testing_mode(self, testing: bool):

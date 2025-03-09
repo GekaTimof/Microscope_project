@@ -3,7 +3,7 @@ import sys
 import pexpect
 import numpy as np
 
-from SpectrometerOptoskyConnection import Spectrometer_directory_path, Spectrometer_name, Integral_time, Wavelength_len, Spectrum_len
+from SpectrometerOptoskyConnection import Spectrometer_directory_path, Spectrometer_name, Integral_time, Wavelength_range_len, Spectrum_len
 from SpectrometerOptoskyConnection import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
@@ -23,13 +23,14 @@ class SpectrometerConnection:
         self.integral_time: int = Integral_time
 
         # set wavelength len and empty wavelength array
-        self.wavelength_len: int = Wavelength_len
-        self.wavelength = np.zeros(self.wavelength_len)
+        self.wavelength_range_len: int = Wavelength_range_len
+        self.wavelength_range = np.zeros(self.wavelength_range_len)
 
         # set spectrum len and empty spectrum array
         self.spectrum_len: int = Spectrum_len
-        self.current_spectrum = np.zeros(self.spectrum_len)
         self.dark_spectrum = np.zeros(self.spectrum_len)
+        self.current_spectrum = np.zeros(self.spectrum_len)
+        self.real_current_spectrum = np.zeros(self.spectrum_len)
 
         # find directories
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,8 +49,6 @@ class SpectrometerConnection:
 
         # set spectrometer connection proses
         self.process = pexpect.spawn(f'{self.spectrometer_path}', cwd=self.working_directory, encoding="utf-8", timeout=10)
-
-
 
 
     # function return spectrometer working_directory
@@ -114,7 +113,7 @@ class SpectrometerConnection:
         return self
 
 
-    # function to set wavelength range
+    # function to get and set wavelength range
     def  get_wavelength_range(self):
         # get command parameters
         command_id = self.Commands[self.Get_wavelength_range][0]
@@ -134,7 +133,7 @@ class SpectrometerConnection:
         return self
 
 
-    # function to set dark spectrum
+    # function to get and set dark spectrum
     def  get_dark_spectrum(self):
         # get command parameters
         command_id = self.Commands[self.Get_dark_spectrum][0]
@@ -159,7 +158,7 @@ class SpectrometerConnection:
         return self
 
 
-    # function to set current spectrum
+    # function to get and set current spectrum
     def  get_current_spectrum(self):
         # get command parameters
         command_id = self.Commands[self.Get_current_spectrum][0]
@@ -177,11 +176,36 @@ class SpectrometerConnection:
         self.wait_for_response(expected_answers[1])
         # get data from response
         data = self.read_until_response(expected_answers[2])
-        # TODO set current_spectrum (real spectrum - dark spectrum)
+        # TODO set current_spectrum
+        # TODO set real_current_spectrum (real spectrum - dark spectrum)
 
         # skip before next request
         self.wait_for_response(expected_answers[3])
         return self
+
+
+    # function return wavelength range
+    def return_wavelength_range(self):
+        return self.wavelength_range
+
+
+    # function return dark spectrum
+    def return_dark_spectrum(self):
+        return self.dark_spectrum
+
+
+    # function return current spectrum
+    def return_current_spectrum(self):
+        return self.current_spectrum
+
+
+    # function return real current spectrum
+    def return_real_current_spectrum(self):
+        return self.real_current_spectrum
+
+    # function return (wavelength range and real current spectrum)
+    def return_wavelength_and_spectrum(self):
+        return (self.wavelength_range, self.real_current_spectrum)
 
 
 if __name__ == "__main__":

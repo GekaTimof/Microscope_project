@@ -30,6 +30,7 @@ OptoskySpectrometerCommands = {
 
 
 # Spectrometer params (will be automated)
-Wavelength_len = 2048
-Spectrum_len = 1044
+# TODO check real Wavelength_range_len and Spectrum_len
+Wavelength_range_len = 2048 # ?1024
+Spectrum_len = 1044 # ?1024
 Integral_time = 10

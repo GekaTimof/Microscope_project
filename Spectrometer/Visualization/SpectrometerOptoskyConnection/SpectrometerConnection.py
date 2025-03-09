@@ -3,8 +3,8 @@ import sys
 import pexpect
 import numpy as np
 
-from Constants import Spectrometer_directory_path, Spectrometer_name, Integral_time, Wavelength_len, Spectrum_len
-from Constants import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
+from SpectrometerOptoskyConnection import Spectrometer_directory_path, Spectrometer_name, Integral_time, Wavelength_len, Spectrum_len
+from SpectrometerOptoskyConnection import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
 class SpectrometerConnection:

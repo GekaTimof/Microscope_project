@@ -1,15 +1,9 @@
 import os.path
 import numpy as np
-
-from numpy.ma.core import array
-from pyqtgraph.examples.GraphItem import lines
-
-file_pass = "../test_data/Y_data.txt"
-# количество строк в файле
-lines_num = 1024
+from Constants import Test_wavelength_len
 
 def get_data_from_file(file_name: str):
-    data = np.zeros(lines_num)
+    data = np.zeros(Test_wavelength_len)
     if os.path.exists(file_name):
         file = open(file_name)
         for i, line in enumerate(file):
@@ -17,14 +11,12 @@ def get_data_from_file(file_name: str):
             # print(data[i])
     return data
 
-def get_data_from_massage(massage: str):
-    data = np.zeros(lines_num)
-    i = 0
-    for line in massage:
-        if line:
-            data[i] = line.split()[-1]
-            i += 1
-    return data
+# def get_data_from_massage(massage: str):
+#     data = np.zeros(lines_num)
+#     i = 0
+#     for line in massage:
+#         if line:
+#             data[i] = line.split()[-1]
+#             i += 1
+#     return data
 
-# data = get_data_from_file(file_pass)
-# print(data)

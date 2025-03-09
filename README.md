@@ -1,7 +1,3 @@
-sudo visudo
-add new rull-> ALL ALL=(ALL) NOPASSWD: /path/to/OptoskyDemo
-
-
 Запуск скрипта из под sudo
 
 sudo chown root:root connection.py  # Сделать владельцем root

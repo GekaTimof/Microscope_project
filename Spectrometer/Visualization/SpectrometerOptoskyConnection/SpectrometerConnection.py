@@ -1,9 +1,8 @@
 import os
-import sys
 import pexpect
 import numpy as np
 
-from SpectrometerOptoskyConnection import Spectrometer_directory_path, Spectrometer_name, Integral_time, Wavelength_range_len, Spectrum_len
+from SpectrometerOptoskyConnection import SPECTROMETER_DIR, SPECTROMETER_FILE, Integral_time, Wavelength_range_len, Spectrum_len
 from SpectrometerOptoskyConnection import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
@@ -32,18 +31,18 @@ class SpectrometerConnection:
         self.current_spectrum = np.zeros(self.spectrum_len)
         self.real_current_spectrum = np.zeros(self.spectrum_len)
 
-        # find directories
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        script_dir = os.path.dirname(base_dir)
-        project_dir = os.path.dirname(script_dir)
+        # # find directories
+        # base_dir = os.path.dirname(os.path.abspath(__file__))
+        # script_dir = os.path.dirname(base_dir)
+        # project_dir = os.path.dirname(script_dir)
 
         # set working directory
-        self.working_directory = os.path.join(project_dir, Spectrometer_directory_path)
+        self.working_directory = SPECTROMETER_DIR
         if not os.path.exists(self.working_directory):
             raise FileNotFoundError(f"Spectrometer directory not found: {self.working_directory}")
 
         # set path to spectrometer script
-        self.spectrometer_path = os.path.join(self.working_directory, Spectrometer_name)
+        self.spectrometer_path = SPECTROMETER_FILE
         if not os.path.isfile(self.spectrometer_path):
             raise FileNotFoundError(f"Spectrometer script not found: {self.spectrometer_path}")
 

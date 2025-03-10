@@ -1,15 +1,20 @@
+import os
+
+# Path to base directory
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Path to spectrometer base dir
+Spectrometer_directory_name = "Get_data"
+Spectrometer_name = "OptoskyDemo"
+SPECTROMETER_DIR = os.path.join(CURRENT_DIR, "..", "..", Spectrometer_directory_name)
+SPECTROMETER_FILE = os.path.join(SPECTROMETER_DIR, Spectrometer_name)
+
 # Path to files with test data
-X_file_path = "test_data/X_data.txt"
-Y_file_path = "test_data/Y_data.txt"
+X_file_path = os.path.join(CURRENT_DIR, "..", "test_data", "X_data.txt")
+Y_file_path = os.path.join(CURRENT_DIR, "..", "test_data", "Y_data.txt")
 
 # Parameters for spectrometer simulating with test data
 Test_wavelength_len = 1024
-
-
-# Paths to Optosky API script
-Spectrometer_directory_path = "Get_data"
-Spectrometer_name = "OptoskyDemo"
-
 
 # Optosky spectrometer commands
 Command_open_spectrometer = "open_spectrometer"

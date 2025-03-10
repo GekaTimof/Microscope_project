@@ -1,17 +1,16 @@
 import sys
 import numpy as np
-import random
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, QPushButton
 from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon
-
+# spectrometer connection class
 from SpectrometerOptoskyConnection import SpectrometerConnection
-
 # visual_testing function and links for test data
 from SpectrometerOptoskyConnection import get_data_from_file
 from SpectrometerOptoskyConnection import X_file_path, Y_file_path
-
+# links to assets
+from SpectrometerApplication import APP_ICON
 
 # Thread to connect and get data from spectrometer
 class DataThread(QThread):
@@ -90,7 +89,7 @@ class GraphApp(QWidget):
     def init_ui(self):
         self.setWindowTitle("Real-time Graph")
         self.setGeometry(100, 100, 900, 500)
-        self.setWindowIcon(QIcon("icon.png"))
+        self.setWindowIcon(QIcon(APP_ICON))
 
         layout = QHBoxLayout()
 
@@ -105,7 +104,8 @@ class GraphApp(QWidget):
         self.time_input = QSpinBox()
         self.time_input.setRange(1, 300)
         self.time_input.setValue(10)
-        self.time_input.valueChanged.connect(self.update_integral_time)
+        self.time_input.setButtonSymbols(QSpinBox.NoButtons)
+        self.time_input.editingFinished.connect(self.update_integral_time)
 
         # button to set dark spectrum
         self.dark_spectrum_button = QPushButton("Set Dark Spectrum")

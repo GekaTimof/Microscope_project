@@ -113,8 +113,8 @@ class SpectrometerConnection:
         return self
 
 
-    # function to get and set wavelength range
-    def  get_wavelength_range(self):
+    # function to retrieve and set wavelength range
+    def  retrieve_and_set_wavelength_range(self):
         # get command parameters
         command_id = self.Commands[self.Get_wavelength_range][0]
         expected_answers = self.Commands[self.Get_wavelength_range][1]
@@ -133,8 +133,8 @@ class SpectrometerConnection:
         return self
 
 
-    # function to get and set dark spectrum
-    def  get_dark_spectrum(self):
+    # function to retrieve and set dark spectrum
+    def  retrieve_and_set_dark_spectrum(self):
         # get command parameters
         command_id = self.Commands[self.Get_dark_spectrum][0]
         expected_answers = self.Commands[self.Get_dark_spectrum][1]
@@ -152,14 +152,15 @@ class SpectrometerConnection:
         # get data from response
         data = self.read_until_response(expected_answers[2])
         # TODO set dark_spectrum
+        # TODO set real_current_spectrum (real spectrum - dark spectrum)
 
         # skip before next request
         self.wait_for_response(expected_answers[3])
         return self
 
 
-    # function to get and set current spectrum
-    def  get_current_spectrum(self):
+    # function to retrieve and set current spectrum
+    def  retrieve_and_set_current_spectrum(self):
         # get command parameters
         command_id = self.Commands[self.Get_current_spectrum][0]
         expected_answers = self.Commands[self.Get_current_spectrum][1]
@@ -203,9 +204,12 @@ class SpectrometerConnection:
     def return_real_current_spectrum(self):
         return self.real_current_spectrum
 
+
     # function return (wavelength range and real current spectrum)
     def return_wavelength_and_spectrum(self):
         return (self.wavelength_range, self.real_current_spectrum)
+
+
 
 
 if __name__ == "__main__":

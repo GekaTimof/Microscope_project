@@ -31,11 +31,6 @@ class SpectrometerConnection:
         self.current_spectrum = np.zeros(self.spectrum_len)
         self.real_current_spectrum = np.zeros(self.spectrum_len)
 
-        # # find directories
-        # base_dir = os.path.dirname(os.path.abspath(__file__))
-        # script_dir = os.path.dirname(base_dir)
-        # project_dir = os.path.dirname(script_dir)
-
         # set working directory
         self.working_directory = SPECTROMETER_DIR
         if not os.path.exists(self.working_directory):
@@ -80,7 +75,7 @@ class SpectrometerConnection:
     def wait_for_response(self,  expect_answer: str, waiting_time: int = 5):
         try:
             # wait for answer
-            self.process.expect(f"{expect_answer}", timeout=waiting_time)
+            self.process.expect(expect_answer, timeout=waiting_time)
             print(f"answer - '{expect_answer}' was received")
         except:
             raise Exception(f"No answer '{expect_answer}' from spectrometer")
@@ -93,8 +88,8 @@ class SpectrometerConnection:
         self.wait_for_response(expect_answer, waiting_time=waiting_time)
 
         # get response
-        data = self.process.before
-        return data
+        response = self.process.before
+        return response
 
 
     # function to connect to spectrometer
@@ -112,8 +107,36 @@ class SpectrometerConnection:
         return self
 
 
+    # function to split text data for len lince and convert to np array
+    def split_spectrometer_response(self, response: str, data_len: int):
+        lines = response.split('\n')
+        # List to store extracted data
+        data = []
+
+        # try to convert text to float
+        for line in lines:
+            # Ignore empty lines or lines without tab
+            if line.strip() and "\t" in line:
+                # Try to extract the second number
+                try:
+                    # Extract number after tab
+                    value = float(line.split("\t")[1].strip())
+                    data.append(value)
+                except ValueError:
+                    pass  # Skip lines that don't have a valid number
+
+        # Convert list to numpy array
+        data = np.array(data, dtype=np.float32)
+
+
+        # check array total len
+        if len(data) != data_len:
+            return None
+        return data
+
+
     # function to retrieve and set wavelength range
-    def  retrieve_and_set_wavelength_range(self):
+    def retrieve_and_set_wavelength_range(self):
         # get command parameters
         command_id = self.Commands[self.Get_wavelength_range][0]
         expected_answers = self.Commands[self.Get_wavelength_range][1]
@@ -124,8 +147,11 @@ class SpectrometerConnection:
         # checking that the wavelength range has been received
         self.wait_for_response(expected_answers[0])
         # get data from response
-        data = self.read_until_response(expected_answers[1])
-        # TODO set wavelength_range
+        response = self.read_until_response(expected_answers[1])
+        data = self.split_spectrometer_response(response, self.wavelength_range_len)
+        # set wavelength range if we got it
+        if data is not None:
+            self.wavelength_range = data
 
         # skip before next request
         self.wait_for_response(expected_answers[2])
@@ -133,7 +159,7 @@ class SpectrometerConnection:
 
 
     # function to retrieve and set dark spectrum
-    def  retrieve_and_set_dark_spectrum(self):
+    def retrieve_and_set_dark_spectrum(self):
         # get command parameters
         command_id = self.Commands[self.Get_dark_spectrum][0]
         expected_answers = self.Commands[self.Get_dark_spectrum][1]
@@ -149,9 +175,13 @@ class SpectrometerConnection:
         # checking that the integral time has been set and data has been received
         self.wait_for_response(expected_answers[1])
         # get data from response
-        data = self.read_until_response(expected_answers[2])
-        # TODO set dark_spectrum
-        # TODO set real_current_spectrum (real spectrum - dark spectrum)
+        response = self.read_until_response(expected_answers[2])
+        data = self.split_spectrometer_response(response, self.spectrum_len)
+        # set dark spectrum if we got
+        if data is not None:
+            self.dark_spectrum = data
+            # set new real current spectrum
+            self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
         # skip before next request
         self.wait_for_response(expected_answers[3])
@@ -159,7 +189,7 @@ class SpectrometerConnection:
 
 
     # function to retrieve and set current spectrum
-    def  retrieve_and_set_current_spectrum(self):
+    def retrieve_and_set_current_spectrum(self):
         # get command parameters
         command_id = self.Commands[self.Get_current_spectrum][0]
         expected_answers = self.Commands[self.Get_current_spectrum][1]
@@ -175,13 +205,23 @@ class SpectrometerConnection:
         # checking that the integral time has been set and data has been received
         self.wait_for_response(expected_answers[1])
         # get data from response
-        data = self.read_until_response(expected_answers[2])
-        # TODO set current_spectrum
-        # TODO set real_current_spectrum (real spectrum - dark spectrum)
+        response = self.read_until_response(expected_answers[2])
+        data = self.split_spectrometer_response(response, self.spectrum_len)
+        # set current spectrum if we got
+        if data is not None:
+            self.current_spectrum = data
+            # set new real current spectrum
+            self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
         # skip before next request
         self.wait_for_response(expected_answers[3])
         return self
+
+
+    # function to clear dark spectrum
+    def clear_dark_spectrum(self):
+        self.dark_spectrum = np.zeros(self.spectrum_len)
+        self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
 
     # function return wavelength range

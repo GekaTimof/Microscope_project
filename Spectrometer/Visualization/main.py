@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QSp
 from PyQt5.QtCore import QThread, pyqtSignal
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon
+
 # spectrometer connection class
 from SpectrometerOptoskyConnection import SpectrometerConnection
 # visual_testing function and links for test data
@@ -24,11 +25,7 @@ class DataThread(QThread):
         if not (testing):
             self.connection = SpectrometerConnection()
             self.connection.open_spectrometer()
-
-    #
-    # # switch testing mode toggle
-    # def testing_mode(self, testing: bool):
-    #     self.testing = testing
+            self.connection.retrieve_and_set_wavelength_range()
 
 
     # function to set new dark spectrum
@@ -36,10 +33,14 @@ class DataThread(QThread):
         self.connection.retrieve_and_set_dark_spectrum()
 
 
+    # function to clear dark spectrum
+    def clear_dark_spectrum(self):
+        self.connection.clear_dark_spectrum()
+
+
     # function to set new dark spectrum
     def set_integral_time(self, new_integral_time: int):
-
-        self.connection.set_integral_time(new_integral_time=new_integral_time)
+        self.connection.set_integral_time(new_integral_time)
 
 
     # function to update data in thread
@@ -53,22 +54,22 @@ class DataThread(QThread):
             else:
                 # get real data from spectrometer
                 # send command to updating current_spectrum (get ntw values from spectrometer)
-                self.connection.get_current_spectrum()
+                self.connection.retrieve_and_set_current_spectrum()
                 # set wavelength_range
                 x_data = self.connection.return_wavelength_range()
+                print(x_data)
                 # set real real_current_spectrum (current_spectrum - dark_spectrum)
                 y_data = self.connection.return_real_current_spectrum()
+                print(y_data)
 
             self.new_data.emit(x_data, y_data)
-            self.sleep(1)
-
+            self.msleep(200)
 
     # function to stop thread
     def stop(self):
         self.running = False
         self.quit()
         self.wait()
-
 
 
 # Interface for spectrometer application
@@ -79,11 +80,6 @@ class GraphApp(QWidget):
         self.init_ui()
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
-
-    #
-    # # in testing mode thread start generating unreal data
-    # def testing_mode(self, testing: bool):
-    #     self.data_thread.testing_mode(testing)
 
 
     def init_ui(self):
@@ -105,16 +101,23 @@ class GraphApp(QWidget):
         self.time_input.setRange(1, 300)
         self.time_input.setValue(10)
         self.time_input.setButtonSymbols(QSpinBox.NoButtons)
-        self.time_input.editingFinished.connect(self.update_integral_time)
+
+        # Connect the valueChanged signal to the update_integral_time slot
+        self.time_input.valueChanged.connect(self.update_integral_time)
 
         # button to set dark spectrum
-        self.dark_spectrum_button = QPushButton("Set Dark Spectrum")
-        self.dark_spectrum_button.clicked.connect(self.data_thread.set_dark_spectrum)
+        self.set_dark_spectrum_button = QPushButton("Set Dark Spectrum")
+        self.set_dark_spectrum_button.clicked.connect(self.data_thread.set_dark_spectrum)
+
+        # button to clear dark spectrum
+        self.clear_dark_spectrum_button = QPushButton("Clear Dark Spectrum")
+        self.clear_dark_spectrum_button.clicked.connect(self.data_thread.clear_dark_spectrum)
 
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.time_label)
         control_layout.addWidget(self.time_input)
-        control_layout.addWidget(self.dark_spectrum_button)
+        control_layout.addWidget(self.set_dark_spectrum_button)
+        control_layout.addWidget(self.clear_dark_spectrum_button)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget)
@@ -138,9 +141,10 @@ class GraphApp(QWidget):
         event.accept()
 
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    # set testing mode (use test data)
-    window = GraphApp(testing=True)
+    # start in normal mode
+    window = GraphApp()
     window.show()
     sys.exit(app.exec_())

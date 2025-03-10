@@ -2,65 +2,61 @@ import os
 import sys
 import pexpect
 import numpy as np
-import time
-# from Visualization import get_data_from_massage
-lines_num_X = 2048
-lines_num_Y = 1044
 
-def get_data_from_massage(massage: str):
-    data = np.zeros(lines_num_X)
-    i = 0
-    for line in massage.splitlines():
-        if line.strip():
-            data[i] = line.split()[-1]
-            i += 1
-    return data
+# Проверка прав доступа
+if os.geteuid() != 0:
+    os.execvp('sudo', ['sudo', sys.executable] + sys.argv)
 
-# Полный путь к исполняемому файлу
 working_directory = os.path.abspath("../Get_data")
-# Название скрипта для получения данных
 get_data_pass = os.path.join(working_directory, "OptoskyDemo")
 
-# Запускаем процесс
+# Запуск процесса с помощью pexpect
 child = pexpect.spawn(f'{get_data_pass}', cwd=working_directory, encoding="utf-8", timeout=10)
+# child.logfile = sys.stdout
 
-
-# try to start script (this script tp get data from spectrometer)
 try:
-    # Читаем вывод до появления "Enter :"
     child.expect("Enter :", timeout=5)
     print("Скрипт запущен")
-except:
+except pexpect.TIMEOUT:
     print("Нет ответа от спектрометра, проверьте подключение")
     sys.exit(1)
 
-# try to connect to spectrometer
-try:
-    # Отправляем команду (например, "0" для подключения к спектрометру)
-    child.sendline("0")
-    child.expect("success!", timeout=5)
-    print("Подключене прошло успешно")
-except:
-    print("Не удолось подключиться к спектрометру, проверьте подключен ли спектрометр и наличие прав (sudo)")
-    sys.exit(1)
-
-# Читаем ответ
+# Открываем спектрометр
+child.sendline("0")
+child.expect("success!")
+print("Подключение прошло успешно")
 child.expect("Enter :")
 
-print("Пустой запуск")
-child.sendline("23")
-child.expect("Enter :")
+# Запуск синхронного спектрального снятия
+child.sendline("31")
+child.expect("input")
+child.sendline("10")  # Вводим значение интегрального времени
+child.expect("number")  # Ожидаем вывода "Pixel number :"
 
-print("Настоящий запуск")
-child.sendline("23")
-child.expect("Wavelength")
+# Ожидание окончания процесса снятия спектра
+child.expect("Count")
+child.expect("==========")
 
-child.expect("====")
-data = get_data_from_massage(child.before)
-print(data)
-child.expect("Enter :")
+# # Создание массива для хранения данных
+# data = np.zeros(1024)
+#
+# # Чтение данных спектра
+# i = 0
+# while True:
+#     line = child.readline().strip()
+#     if not line:
+#         break
+#     try:
+#         # Извлекаем данные по числовому значению пикселя
+#         data[i] = float(line.split()[-1])
+#         i += 1
+#     except ValueError:
+#         pass
 
-# Завершаем программу (отправляем команду выхода "100")
-print("Завершаем сеанс")
+
+print("Измеренные данные:", child.before)
+
+# Закрытие спектрометра
 child.sendline("100")
 child.close()
+print("Сеанс завершен")

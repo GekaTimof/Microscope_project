@@ -30,14 +30,14 @@ Command_get_current_spectrum = "get_current_spectrum"
 # val[0] - command id,
 # val[1] - contain array or key phrases to extract values from request
 OptoskySpectrometerCommands = {
-    Command_open_spectrometer: ("0", ["Open spectrometer success", "Enter :"]),
-    Command_get_wavelength_range: ("23", ["Pixel  Wavelength", "=====", "Enter :"]),
-    Command_get_dark_spectrum: ("30", ["time(ms) :", "=====", "Enter :"]),
-    Command_get_current_spectrum: ("31", ["time(ms) :", "=====", "Enter :"]),
+    Command_open_spectrometer: ("0", ["Open spectrometer success!", "Enter :"]),
+    Command_get_wavelength_range: ("23", ["Wavelength", "=====", "Enter :"]),
+    Command_get_dark_spectrum: ("30", ["input", "Count", "=====", "Enter :"]),
+    Command_get_current_spectrum: ("31", ["input", "Count", "=====", "Enter :"]),
 }
 
 
 # Spectrometer params (will be automated)
 Wavelength_range_len = 1024
-Spectrum_len = 1024 
+Spectrum_len = Wavelength_range_len
 Integral_time = 10

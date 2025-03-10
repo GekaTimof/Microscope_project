@@ -10,8 +10,11 @@ SPECTROMETER_DIR = os.path.join(CURRENT_DIR, "..", "..", Spectrometer_directory_
 SPECTROMETER_FILE = os.path.join(SPECTROMETER_DIR, Spectrometer_name)
 
 # Path to files with test data
-X_file_path = os.path.join(CURRENT_DIR, "..", "test_data", "X_data.txt")
-Y_file_path = os.path.join(CURRENT_DIR, "..", "test_data", "Y_data.txt")
+Test_data_directory_name = "TestData"
+Test_data_X_name = "X_data.txt"
+Test_data_Y_name = "Y_data.txt" 
+TEST_DATA_X_PATH = os.path.join(CURRENT_DIR, "..", Test_data_directory_name, Test_data_X_name)
+TEST_DATA_Y_PATH = os.path.join(CURRENT_DIR, "..", Test_data_directory_name, Test_data_Y_name)
 
 # Parameters for spectrometer simulating with test data
 Test_wavelength_len = 1024
@@ -35,7 +38,6 @@ OptoskySpectrometerCommands = {
 
 
 # Spectrometer params (will be automated)
-# TODO check real Wavelength_range_len and Spectrum_len
-Wavelength_range_len = 2048 # ?1024
-Spectrum_len = 1044 # ?1024
+Wavelength_range_len = 1024
+Spectrum_len = 1024 
 Integral_time = 10

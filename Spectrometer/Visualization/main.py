@@ -8,7 +8,7 @@ from PyQt5.QtGui import QIcon
 from SpectrometerOptoskyConnection import SpectrometerConnection
 # visual_testing function and links for test data
 from SpectrometerOptoskyConnection import get_data_from_file
-from SpectrometerOptoskyConnection import X_file_path, Y_file_path
+from SpectrometerOptoskyConnection import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
 # links to assets
 from SpectrometerApplication import APP_ICON
 
@@ -47,8 +47,8 @@ class DataThread(QThread):
         while self.running:
             if self.testing:
                 # get test data from file
-                x_data = get_data_from_file(X_file_path)
-                y_data = get_data_from_file(Y_file_path)
+                x_data = get_data_from_file(TEST_DATA_X_PATH)
+                y_data = get_data_from_file(TEST_DATA_Y_PATH)
                 y_data += np.random.choice([-200, 200], size=y_data.size)
             else:
                 # get real data from spectrometer

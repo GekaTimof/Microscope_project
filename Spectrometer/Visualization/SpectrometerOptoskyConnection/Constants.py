@@ -38,6 +38,6 @@ OptoskySpectrometerCommands = {
 
 
 # Spectrometer params (will be automated)
-Wavelength_range_len = 1024
-Spectrum_len = Wavelength_range_len
-Integral_time = 10
+WAVELENGTH_RANGE_LEN = 1024
+SPECTRUM_LEN = WAVELENGTH_RANGE_LEN
+START_INTEGRAL_TIME = 10

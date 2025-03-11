@@ -1,17 +1,17 @@
 import sys
 import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, QPushButton
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon
-
 # spectrometer connection class
-from SpectrometerOptoskyConnection import SpectrometerConnection
+from SpectrometerOptoskyConnection import SpectrometerConnection, START_INTEGRAL_TIME
 # visual_testing function and links for test data
 from SpectrometerOptoskyConnection import get_data_from_file
 from SpectrometerOptoskyConnection import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
 # links to assets
 from SpectrometerApplication import APP_ICON
+
 
 # Thread to connect and get data from spectrometer
 class DataThread(QThread):
@@ -63,7 +63,7 @@ class DataThread(QThread):
                 print(y_data)
 
             self.new_data.emit(x_data, y_data)
-            self.msleep(200)
+            self.msleep(10)
 
     # function to stop thread
     def stop(self):
@@ -98,8 +98,8 @@ class GraphApp(QWidget):
         # input field to set integral time
         self.time_label = QLabel("Integral Time (s):")
         self.time_input = QSpinBox()
-        self.time_input.setRange(1, 300)
-        self.time_input.setValue(10)
+        self.time_input.setRange(1, 9999)
+        self.time_input.setValue(START_INTEGRAL_TIME)
         self.time_input.setButtonSymbols(QSpinBox.NoButtons)
 
         # Connect the valueChanged signal to the update_integral_time slot

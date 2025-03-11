@@ -2,7 +2,7 @@ import os
 import pexpect
 import numpy as np
 
-from SpectrometerOptoskyConnection import SPECTROMETER_DIR, SPECTROMETER_FILE, Integral_time, Wavelength_range_len, Spectrum_len
+from SpectrometerOptoskyConnection import SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
 from SpectrometerOptoskyConnection import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
@@ -19,14 +19,14 @@ class SpectrometerConnection:
         self.Get_current_spectrum = Command_get_current_spectrum
 
         # set start accumulation time
-        self.integral_time: int = Integral_time
+        self.integral_time: int = START_INTEGRAL_TIME
 
         # set wavelength len and empty wavelength array
-        self.wavelength_range_len: int = Wavelength_range_len
+        self.wavelength_range_len: int = WAVELENGTH_RANGE_LEN
         self.wavelength_range = np.zeros(self.wavelength_range_len)
 
         # set spectrum len and empty spectrum array
-        self.spectrum_len: int = Spectrum_len
+        self.spectrum_len: int = SPECTRUM_LEN
         self.dark_spectrum = np.zeros(self.spectrum_len)
         self.current_spectrum = np.zeros(self.spectrum_len)
         self.real_current_spectrum = np.zeros(self.spectrum_len)

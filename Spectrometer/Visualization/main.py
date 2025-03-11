@@ -21,6 +21,7 @@ class DataThread(QThread):
         super().__init__()
         self.testing = testing
         self.running = True
+        self.mutex = QMutex()
         # start connection to spectrometer
         if not (testing):
             self.connection = SpectrometerConnection()
@@ -30,22 +31,29 @@ class DataThread(QThread):
 
     # function to set new dark spectrum
     def set_dark_spectrum(self):
+        self.mutex.lock()
         self.connection.retrieve_and_set_dark_spectrum()
+        self.mutex.unlock()
 
 
     # function to clear dark spectrum
     def clear_dark_spectrum(self):
+        self.mutex.lock()
         self.connection.clear_dark_spectrum()
+        self.mutex.unlock()
 
 
     # function to set new dark spectrum
     def set_integral_time(self, new_integral_time: int):
+        self.mutex.lock()
         self.connection.set_integral_time(new_integral_time)
+        self.mutex.unlock()
 
 
     # function to update data in thread
     def run(self):
         while self.running:
+            self.mutex.lock()
             if self.testing:
                 # get test data from file
                 x_data = get_data_from_file(TEST_DATA_X_PATH)
@@ -63,7 +71,9 @@ class DataThread(QThread):
                 print(y_data)
 
             self.new_data.emit(x_data, y_data)
+            self.mutex.unlock()
             self.msleep(10)
+
 
     # function to stop thread
     def stop(self):

@@ -64,7 +64,6 @@ class SpectrometerConnection:
             self.integral_time = new_integral_time
         else:
             raise Exception(f"an able to set integral_time = {new_integral_time}")
-            # TODO add correct Exception
 
 
     # function send one command to spectrometer
@@ -82,7 +81,6 @@ class SpectrometerConnection:
             print(f"answer - '{expect_answer}' was received")
         except:
             raise Exception(f"No answer '{expect_answer}' from spectrometer")
-            # TODO add correct Exception
 
 
     # function trying to find expect_answer in spectrometer text flow and return all test before it

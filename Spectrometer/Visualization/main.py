@@ -102,6 +102,7 @@ class DataThread(QThread):
         self.wait()
 
 
+
 # Interface for spectrometer application
 class GraphApp(QWidget):
     def __init__(self, testing: bool = False):
@@ -206,9 +207,10 @@ class GraphApp(QWidget):
             self.data_thread.save_spectrum_data_to_folder(folder=directory)
 
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # start in normal mode
-    window = GraphApp(True)
+    window = GraphApp()
     window.show()
     sys.exit(app.exec_())

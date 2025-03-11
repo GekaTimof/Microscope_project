@@ -3,7 +3,7 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 import pyqtgraph as pg
 from PyQt5.QtCore import QTimer
-from Get_data import get_data_from_file
+from GetData import get_data_from_file
 
 X_file_pass = "../test_data/X_data.txt"
 Y_file_pass = "../test_data/Y_data.txt"

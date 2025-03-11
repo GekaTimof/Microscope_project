@@ -31,6 +31,9 @@ class SpectrometerConnection:
         self.current_spectrum = np.zeros(self.spectrum_len)
         self.real_current_spectrum = np.zeros(self.spectrum_len)
 
+        # set sub parameter (True - is we set dark spectrum, False - is we don't set dark spectrum )
+        self.sub = False
+
         # set working directory
         self.working_directory = SPECTROMETER_DIR
         if not os.path.exists(self.working_directory):
@@ -180,6 +183,7 @@ class SpectrometerConnection:
         # set dark spectrum if we got
         if data is not None:
             self.dark_spectrum = data
+            self.sub = True
             # set new real current spectrum
             self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
@@ -221,6 +225,7 @@ class SpectrometerConnection:
     # function to clear dark spectrum
     def clear_dark_spectrum(self):
         self.dark_spectrum = np.zeros(self.spectrum_len)
+        self.sub = False
         self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
 
@@ -248,6 +253,18 @@ class SpectrometerConnection:
     def return_wavelength_and_spectrum(self):
         return (self.wavelength_range, self.real_current_spectrum)
 
+
+    # function return sub parameter
+    def return_sub_parameter(self):
+        return self.sub
+
+
+    # function return sub parameter
+    def return_sub_parameter_text(self):
+        if self.sub:
+            return "sub"
+        else:
+            return "no_sub"
 
 
 

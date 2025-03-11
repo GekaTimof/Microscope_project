@@ -106,7 +106,7 @@ class GraphApp(QWidget):
         self.curve = self.graph_widget.plot(pen="b")
 
         # input field to set integral time
-        self.time_label = QLabel("Integral Time (s):")
+        self.time_label = QLabel("Integral Time (ms):")
         self.time_input = QSpinBox()
         self.time_input.setRange(1, 9999)
         self.time_input.setValue(START_INTEGRAL_TIME)
@@ -146,9 +146,15 @@ class GraphApp(QWidget):
 
 
     # function to stap thread (spectrometer connection)
-    def closeEvent(self, event):
+    def close_event(self, event):
         self.data_thread.stop()
         event.accept()
+
+
+    # function to save file with data to selected folder
+    def save_data(self):
+        # TODO create save_data function
+        pass
 
 
 

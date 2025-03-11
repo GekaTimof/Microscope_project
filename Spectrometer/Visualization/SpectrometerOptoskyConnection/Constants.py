@@ -36,7 +36,6 @@ OptoskySpectrometerCommands = {
     Command_get_current_spectrum: ("31", ["input", "Count", "=====", "Enter :"]),
 }
 
-
 # Spectrometer params (will be automated)
 WAVELENGTH_RANGE_LEN = 1024
 SPECTRUM_LEN = WAVELENGTH_RANGE_LEN

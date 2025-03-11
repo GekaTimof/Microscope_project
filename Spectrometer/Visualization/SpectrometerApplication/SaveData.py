@@ -1,5 +1,12 @@
 import os
 import datetime
+import numpy as np
+
+
+# generate array with X and Y (for saving text data)
+def generate_spectrum_data_array(X: np.array, Y: np.array):
+    if X.size == Y.size:
+        pass
 
 
 # create name for file with data from spectrometer

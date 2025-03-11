@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, QPushButton
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon
@@ -105,6 +105,22 @@ class GraphApp(QWidget):
         self.graph_widget.setLabel("bottom", "X Values")
         self.curve = self.graph_widget.plot(pen="b")
 
+        # input directory field
+        dir_layout = QHBoxLayout()
+        self.dir_label = QLabel("Save Directory:")
+        self.dir_input = QLineEdit()
+        self.dir_input.setPlaceholderText("Select a folder...")
+        self.dir_button = QPushButton("Browse")
+        self.dir_button.clicked.connect(self.select_directory)
+
+        # create directory input layout
+        dir_layout.addWidget(self.dir_input)
+        dir_layout.addWidget(self.dir_button)
+
+        # button to save spectrometer data
+        self.save_button = QPushButton("Save Data")
+        self.save_button.clicked.connect(self.save_data)
+
         # input field to set integral time
         self.time_label = QLabel("Integral Time (ms):")
         self.time_input = QSpinBox()
@@ -128,11 +144,31 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.time_input)
         control_layout.addWidget(self.set_dark_spectrum_button)
         control_layout.addWidget(self.clear_dark_spectrum_button)
+        control_layout.addWidget(self.dir_label)
+        control_layout.addLayout(dir_layout)
+        control_layout.addWidget(self.save_button)
         control_layout.addStretch()
 
-        layout.addWidget(self.graph_widget)
-        layout.addLayout(control_layout)
+        layout.addWidget(self.graph_widget,7)
+        layout.addLayout(control_layout, 2)
         self.setLayout(layout)
+
+
+    # function to directory selector
+    def select_directory(self):
+        directory = QFileDialog.getExistingDirectory(self, "Select Directory")
+        if directory:
+            self.dir_input.setText(directory)
+
+
+    def save_data(self):
+        pass
+        # directory = self.dir_input.text()
+        # if not directory:
+        #     print("No directory selected!")
+        #     return
+        # #
+        # self.data_thread.connection.save_data(directory)
 
 
     # function to update integral time
@@ -161,6 +197,6 @@ class GraphApp(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # start in normal mode
-    window = GraphApp()
+    window = GraphApp(True)
     window.show()
     sys.exit(app.exec_())

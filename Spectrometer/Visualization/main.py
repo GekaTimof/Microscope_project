@@ -11,6 +11,8 @@ from SpectrometerOptoskyConnection import get_data_from_file
 from SpectrometerOptoskyConnection import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
 # links to assets
 from SpectrometerApplication import APP_ICON
+# functions to save spectrum data
+from SpectrometerApplication import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
 
 
 # Thread to connect and get data from spectrometer
@@ -50,6 +52,26 @@ class DataThread(QThread):
         self.mutex.unlock()
 
 
+    # function to save spectrum data (X  Y) to chosen folder
+    def save_spectrum_data_to_folder(self, folder):
+        self.mutex.lock()
+        # get wavelength_range
+        x_data = self.connection.return_wavelength_range()
+        # get real real_current_spectrum (current_spectrum - dark_spectrum)
+        y_data = self.connection.return_real_current_spectrum()
+        # generate array of text lines
+        data = generate_spectrum_data_array(X=x_data, Y=y_data)
+        # generate name for file for data
+        file_name = generate_spectrum_file_name(prefix=self.connection.return_sub_parameter_text())
+
+        # save data like file to folder (if we have data)
+        if data is not None:
+            save_data_to_folder(data, file_name, folder)
+        else:
+            print("Not enough data (X Y) to save it")
+        self.mutex.unlock()
+
+
     # function to update data in thread
     def run(self):
         while self.running:
@@ -63,12 +85,10 @@ class DataThread(QThread):
                 # get real data from spectrometer
                 # send command to updating current_spectrum (get ntw values from spectrometer)
                 self.connection.retrieve_and_set_current_spectrum()
-                # set wavelength_range
+                # get wavelength_range
                 x_data = self.connection.return_wavelength_range()
-                print(x_data)
-                # set real real_current_spectrum (current_spectrum - dark_spectrum)
+                # get real real_current_spectrum (current_spectrum - dark_spectrum)
                 y_data = self.connection.return_real_current_spectrum()
-                print(y_data)
 
             self.new_data.emit(x_data, y_data)
             self.mutex.unlock()
@@ -119,12 +139,12 @@ class GraphApp(QWidget):
 
         # button to save spectrometer data
         self.save_button = QPushButton("Save Data")
-        self.save_button.clicked.connect(self.save_data)
+        self.save_button.clicked.connect(self.save_spectrum_data)
 
         # input field to set integral time
         self.time_label = QLabel("Integral Time (ms):")
         self.time_input = QSpinBox()
-        self.time_input.setRange(1, 9999)
+        self.time_input.setRange(1, 99999)
         self.time_input.setValue(START_INTEGRAL_TIME)
         self.time_input.setButtonSymbols(QSpinBox.NoButtons)
 
@@ -149,8 +169,8 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.save_button)
         control_layout.addStretch()
 
-        layout.addWidget(self.graph_widget,7)
-        layout.addLayout(control_layout, 2)
+        layout.addWidget(self.graph_widget,5)
+        layout.addLayout(control_layout, 1)
         self.setLayout(layout)
 
 
@@ -159,16 +179,6 @@ class GraphApp(QWidget):
         directory = QFileDialog.getExistingDirectory(self, "Select Directory")
         if directory:
             self.dir_input.setText(directory)
-
-
-    def save_data(self):
-        pass
-        # directory = self.dir_input.text()
-        # if not directory:
-        #     print("No directory selected!")
-        #     return
-        # #
-        # self.data_thread.connection.save_data(directory)
 
 
     # function to update integral time
@@ -188,10 +198,12 @@ class GraphApp(QWidget):
 
 
     # function to save file with data to selected folder
-    def save_data(self):
-        # TODO create save_data function
-        pass
-
+    def save_spectrum_data(self):
+        directory = self.dir_input.text()
+        if not directory:
+            print("No directory selected!")
+        else:
+            self.data_thread.save_spectrum_data_to_folder(folder=directory)
 
 
 if __name__ == "__main__":

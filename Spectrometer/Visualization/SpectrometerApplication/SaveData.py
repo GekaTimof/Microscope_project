@@ -6,11 +6,16 @@ import numpy as np
 # generate array with X and Y (for saving text data)
 def generate_spectrum_data_array(X: np.array, Y: np.array):
     if X.size == Y.size:
-        pass
+        text_array = []
+        for i, elem in enumerate(X):
+            text_array.append(f"{X[i]}  {Y[i]}")
+        return text_array
+    else:
+        return None
 
 
-# create name for file with data from spectrometer
-def create_spectrum_data_name(prefix: str = ""):
+# generate name for file with data from spectrometer
+def generate_spectrum_file_name(prefix: str = ""):
     name = prefix + str(datetime.datetime.now())
     return name
 

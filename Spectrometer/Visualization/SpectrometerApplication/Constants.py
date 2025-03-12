@@ -9,3 +9,6 @@ Assets_directory_name = "Assets"
 App_icon_name = "icon.png"
 ASSETS_DIR = os.path.join(CURRENT_DIR, ".." , Assets_directory_name)
 APP_ICON = os.path.join(ASSETS_DIR, App_icon_name)
+
+# minimum graphic Y
+MIN_GRAPHIC_Y_RANGE = 1000

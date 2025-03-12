@@ -2,8 +2,8 @@ import os
 import pexpect
 import numpy as np
 
-from SpectrometerOptoskyConnection import SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
-from SpectrometerOptoskyConnection import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
+from SpectrometerOptoskyConnection.Constants import SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
+from SpectrometerOptoskyConnection.Constants import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
 class SpectrometerConnection:

@@ -1,4 +1,4 @@
-from .Constants import *
-from .GetTestData import get_data_from_file
+from . import Constants
+from . import GetTestData
 from .SpectrometerConnection import SpectrometerConnection
 

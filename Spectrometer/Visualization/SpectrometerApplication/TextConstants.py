@@ -25,3 +25,8 @@ CLEAR_DARK_SPECTRUM_BUTTON = "Clear Dark Spectrum"
 # directory selector function text
 SELECT_DIRECTORY_FILE_DIALOG = "Select Directory"
 
+
+
+
+# reset zoom button text
+RESET_ZOOM_BUTTON = "Reset Zoom"

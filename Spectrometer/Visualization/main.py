@@ -5,14 +5,14 @@ from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon
 # spectrometer connection class
-from SpectrometerOptoskyConnection import SpectrometerConnection, START_INTEGRAL_TIME
+from SpectrometerOptoskyConnection import SpectrometerConnection
 # visual_testing function and links for test data
-from SpectrometerOptoskyConnection import get_data_from_file
-from SpectrometerOptoskyConnection import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
+from SpectrometerOptoskyConnection.GetTestData import get_data_from_file
+from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH, TEST_DATA_Y_PATH, MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # links to assets
-from SpectrometerApplication import APP_ICON
+from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE
 # functions to save spectrum data
-from SpectrometerApplication import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
+from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
 # application text
 from SpectrometerApplication import TextConstants as app_text
 
@@ -77,13 +77,15 @@ class DataThread(QThread):
 
     # function to update data in thread
     def run(self):
+        if self.testing:
+            y_data_test = get_data_from_file(TEST_DATA_Y_PATH)
         while self.running:
             self.mutex.lock()
             if self.testing:
                 # get test data from file
                 x_data = get_data_from_file(TEST_DATA_X_PATH)
-                y_data = get_data_from_file(TEST_DATA_Y_PATH)
-                y_data += np.random.choice([-200, 200], size=y_data.size)
+                y_data_test += np.random.choice([-10, 10], size=y_data_test.size)
+                y_data = y_data_test
             else:
                 # get real data from spectrometer
                 # send command to updating current_spectrum (get ntw values from spectrometer)
@@ -128,6 +130,25 @@ class GraphApp(QWidget):
         self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL)
         self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL)
         self.curve = self.graph_widget.plot(pen="b")
+        self.graph_widget.setLimits(minYRange=MIN_GRAPHIC_Y_RANGE)
+
+        # input field to set integral time
+        self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL)
+        self.time_input = QSpinBox()
+        self.time_input.setRange(1, MAX_INTEGRAL_TIME)
+        self.time_input.setValue(START_INTEGRAL_TIME)
+        self.time_input.setButtonSymbols(QSpinBox.NoButtons)
+
+        # Connect the valueChanged signal to the update_integral_time slot
+        self.time_input.valueChanged.connect(self.update_integral_time)
+
+        # button to set dark spectrum
+        self.set_dark_spectrum_button = QPushButton(app_text.SET_DARK_SPECTRUM_BUTTON)
+        self.set_dark_spectrum_button.clicked.connect(self.data_thread.set_dark_spectrum)
+
+        # button to clear dark spectrum
+        self.clear_dark_spectrum_button = QPushButton(app_text.CLEAR_DARK_SPECTRUM_BUTTON)
+        self.clear_dark_spectrum_button.clicked.connect(self.data_thread.clear_dark_spectrum)
 
         # input directory field
         dir_layout = QHBoxLayout()
@@ -145,23 +166,9 @@ class GraphApp(QWidget):
         self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON)
         self.save_button.clicked.connect(self.save_spectrum_data)
 
-        # input field to set integral time
-        self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL)
-        self.time_input = QSpinBox()
-        self.time_input.setRange(1, 99999)
-        self.time_input.setValue(START_INTEGRAL_TIME)
-        self.time_input.setButtonSymbols(QSpinBox.NoButtons)
-
-        # Connect the valueChanged signal to the update_integral_time slot
-        self.time_input.valueChanged.connect(self.update_integral_time)
-
-        # button to set dark spectrum
-        self.set_dark_spectrum_button = QPushButton(app_text.SET_DARK_SPECTRUM_BUTTON)
-        self.set_dark_spectrum_button.clicked.connect(self.data_thread.set_dark_spectrum)
-
-        # button to clear dark spectrum
-        self.clear_dark_spectrum_button = QPushButton(app_text.CLEAR_DARK_SPECTRUM_BUTTON)
-        self.clear_dark_spectrum_button.clicked.connect(self.data_thread.clear_dark_spectrum)
+        # Button to reset graph zoom
+        self.reset_zoom_button = QPushButton(app_text.RESET_ZOOM_BUTTON)
+        self.reset_zoom_button.clicked.connect(self.reset_graph_view)
 
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.time_label)
@@ -171,6 +178,7 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.dir_label)
         control_layout.addLayout(dir_layout)
         control_layout.addWidget(self.save_button)
+        control_layout.addWidget(self.reset_zoom_button)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget,5)
@@ -208,6 +216,19 @@ class GraphApp(QWidget):
             print("No directory selected!")
         else:
             self.data_thread.save_spectrum_data_to_folder(folder=directory)
+
+
+    # function to reset graphic zoom
+    def reset_graph_view(self):
+        if self.curve is not None:
+            data = self.curve.getData()
+            if data is not None and len(data[0]) > 0:
+                x_values, y_values = data
+                min_x, max_x = min(x_values), max(x_values)
+                min_y, max_y = min(y_values), max(y_values)
+
+                self.graph_widget.setXRange(min_x, max_x)
+                self.graph_widget.setYRange(min_y, max_y)
 
 
 

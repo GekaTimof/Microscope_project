@@ -1,6 +1,6 @@
 import os.path
 import numpy as np
-from SpectrometerOptoskyConnection import Test_wavelength_len
+from SpectrometerOptoskyConnection.Constants import Test_wavelength_len
 
 def get_data_from_file(file_name: str):
     data = np.zeros(Test_wavelength_len)

@@ -13,6 +13,9 @@ from SpectrometerOptoskyConnection import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
 from SpectrometerApplication import APP_ICON
 # functions to save spectrum data
 from SpectrometerApplication import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
+# application text
+from SpectrometerApplication import TextConstants as app_text
+
 
 
 # Thread to connect and get data from spectrometer
@@ -114,7 +117,7 @@ class GraphApp(QWidget):
 
 
     def init_ui(self):
-        self.setWindowTitle("Real-time Graph")
+        self.setWindowTitle(app_text.WINDOW_TITLE)
         self.setGeometry(100, 100, 900, 500)
         self.setWindowIcon(QIcon(APP_ICON))
 
@@ -122,16 +125,16 @@ class GraphApp(QWidget):
 
         self.graph_widget = pg.PlotWidget()
         self.graph_widget.setBackground("w")
-        self.graph_widget.setLabel("left", "Y Values")
-        self.graph_widget.setLabel("bottom", "X Values")
+        self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL)
+        self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL)
         self.curve = self.graph_widget.plot(pen="b")
 
         # input directory field
         dir_layout = QHBoxLayout()
-        self.dir_label = QLabel("Save Directory:")
+        self.dir_label = QLabel(app_text.INPUT_DIRECTORY_LABEL)
         self.dir_input = QLineEdit()
-        self.dir_input.setPlaceholderText("Select a folder...")
-        self.dir_button = QPushButton("Browse")
+        self.dir_input.setPlaceholderText(app_text.INPUT_PLACEHOLDER_TEXT)
+        self.dir_button = QPushButton(app_text.INPUT_DIRECTORY_BUTTON)
         self.dir_button.clicked.connect(self.select_directory)
 
         # create directory input layout
@@ -139,11 +142,11 @@ class GraphApp(QWidget):
         dir_layout.addWidget(self.dir_button)
 
         # button to save spectrometer data
-        self.save_button = QPushButton("Save Data")
+        self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON)
         self.save_button.clicked.connect(self.save_spectrum_data)
 
         # input field to set integral time
-        self.time_label = QLabel("Integral Time (ms):")
+        self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL)
         self.time_input = QSpinBox()
         self.time_input.setRange(1, 99999)
         self.time_input.setValue(START_INTEGRAL_TIME)
@@ -153,11 +156,11 @@ class GraphApp(QWidget):
         self.time_input.valueChanged.connect(self.update_integral_time)
 
         # button to set dark spectrum
-        self.set_dark_spectrum_button = QPushButton("Set Dark Spectrum")
+        self.set_dark_spectrum_button = QPushButton(app_text.SET_DARK_SPECTRUM_BUTTON)
         self.set_dark_spectrum_button.clicked.connect(self.data_thread.set_dark_spectrum)
 
         # button to clear dark spectrum
-        self.clear_dark_spectrum_button = QPushButton("Clear Dark Spectrum")
+        self.clear_dark_spectrum_button = QPushButton(app_text.CLEAR_DARK_SPECTRUM_BUTTON)
         self.clear_dark_spectrum_button.clicked.connect(self.data_thread.clear_dark_spectrum)
 
         control_layout = QVBoxLayout()
@@ -177,7 +180,7 @@ class GraphApp(QWidget):
 
     # function to directory selector
     def select_directory(self):
-        directory = QFileDialog.getExistingDirectory(self, "Select Directory")
+        directory = QFileDialog.getExistingDirectory(self, app_text.SELECT_DIRECTORY_FILE_DIALOG)
         if directory:
             self.dir_input.setText(directory)
 
@@ -211,6 +214,6 @@ class GraphApp(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # start in normal mode
-    window = GraphApp()
+    window = GraphApp(True)
     window.show()
     sys.exit(app.exec_())

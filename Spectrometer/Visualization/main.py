@@ -1,9 +1,13 @@
+import os
 import sys
+import pwd
+import getpass
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
+    QPushButton, QShortcut
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QKeySequence
 # spectrometer connection class
 from SpectrometerOptoskyConnection import SpectrometerConnection
 # visual_testing function and links for test data
@@ -97,7 +101,7 @@ class DataThread(QThread):
 
             self.new_data.emit(x_data, y_data)
             self.mutex.unlock()
-            self.msleep(10)
+            self.msleep(1)
 
 
     # function to stop thread
@@ -155,6 +159,7 @@ class GraphApp(QWidget):
         self.dir_label = QLabel(app_text.INPUT_DIRECTORY_LABEL)
         self.dir_input = QLineEdit()
         self.dir_input.setPlaceholderText(app_text.INPUT_PLACEHOLDER_TEXT)
+        self.dir_input.setReadOnly(True)
         self.dir_button = QPushButton(app_text.INPUT_DIRECTORY_BUTTON)
         self.dir_button.clicked.connect(self.select_directory)
 
@@ -162,9 +167,12 @@ class GraphApp(QWidget):
         dir_layout.addWidget(self.dir_input)
         dir_layout.addWidget(self.dir_button)
 
-        # button to save spectrometer data
+        # button to save spectrum data
         self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON)
         self.save_button.clicked.connect(self.save_spectrum_data)
+        # set key combination to save spectrum data
+        shortcut_save_spectrum_data = QShortcut(QKeySequence("Ctrl+S"), self)
+        shortcut_save_spectrum_data.activated.connect(self.save_spectrum_data)
 
         # Button to reset graph zoom
         self.reset_zoom_button = QPushButton(app_text.RESET_ZOOM_BUTTON)
@@ -181,15 +189,29 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.reset_zoom_button)
         control_layout.addStretch()
 
-        layout.addWidget(self.graph_widget,5)
+        layout.addWidget(self.graph_widget,4)
         layout.addLayout(control_layout, 1)
         self.setLayout(layout)
 
 
     # function to directory selector
     def select_directory(self):
-        directory = QFileDialog.getExistingDirectory(self, app_text.SELECT_DIRECTORY_FILE_DIALOG)
+        # get home directory of user in whose directory the program is located
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        dir_stat = os.stat(script_dir)
+        user_info = pwd.getpwuid(dir_stat.st_uid)
+        home_dir = user_info.pw_dir
+
+        options = QFileDialog.Option.DontUseNativeDialog
+        options |= QFileDialog.Option.ReadOnly
+
+        directory = QFileDialog.getExistingDirectory(self, "Select Directory", home_dir, options)
         if directory:
+            # check that user try to select folder in home directory
+            if not directory.startswith(home_dir):
+                print("⚠ Error: You can only select folders in your home directory!")
+                return
+
             self.dir_input.setText(directory)
 
 
@@ -214,8 +236,20 @@ class GraphApp(QWidget):
         directory = self.dir_input.text()
         if not directory:
             print("No directory selected!")
-        else:
-            self.data_thread.save_spectrum_data_to_folder(folder=directory)
+            return
+
+        # get home directory of user in whose directory the program is located
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        dir_stat = os.stat(script_dir)
+        user_info = pwd.getpwuid(dir_stat.st_uid)
+        home_dir = user_info.pw_dir
+
+        # check that use try to save data to home directory
+        if not directory.startswith(home_dir):
+            print("⚠ Error: Saving outside the home directory is prohibited!")
+            return
+
+        self.data_thread.save_spectrum_data_to_folder(folder=directory)
 
 
     # function to reset graphic zoom

@@ -69,7 +69,7 @@ class SpectrometerConnection:
     # function send one command to spectrometer
     def send_command(self, command: str):
         self.process.sendline(command)
-        print(f"command - '{command}' has been sent")
+        #print(f"command - '{command}' has been sent")
         return self
 
 
@@ -78,7 +78,7 @@ class SpectrometerConnection:
         try:
             # wait for answer
             self.process.expect(expect_answer, timeout=waiting_time)
-            print(f"answer - '{expect_answer}' was received")
+            #print(f"answer - '{expect_answer}' was received")
         except:
             raise Exception(f"No answer '{expect_answer}' from spectrometer")
 

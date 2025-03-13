@@ -2,9 +2,10 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,c,python,c++,pycharm
 
 ### Test datas ###
-
 *test_data/
 
+### Test folder to save data ###
+*save_data_folder
 
 
 ### C ###

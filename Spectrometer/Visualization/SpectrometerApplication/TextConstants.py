@@ -2,13 +2,13 @@
 
 # application window text
 WINDOW_TITLE = "Real-time Graph"
-LEFT_GRAPHIC_LABEL = "Y Values"
-BOTTOM_GRAPHIC_LABEL = "X Values"
+LEFT_GRAPHIC_LABEL = "Intensity, counts"
+BOTTOM_GRAPHIC_LABEL = "Wavelength, nm"
 
 # input directory field text
 INPUT_DIRECTORY_LABEL = "Save Directory:"
-INPUT_PLACEHOLDER_TEXT = "Select a folder..."
-INPUT_DIRECTORY_BUTTON = "Browse"
+INPUT_PLACEHOLDER_TEXT = "No Folder Selected"
+INPUT_DIRECTORY_BUTTON = "Select"
 
 # save file to directory button text
 SAVE_SPECTROMETER_DATA_BUTTON = "Save Data"

@@ -2,7 +2,7 @@ import os
 import pexpect
 import numpy as np
 
-from SpectrometerOptoskyConnection.Constants import SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
+from SpectrometerOptoskyConnection.Constants import MINIMUM_WAITING_TIME, WAITING_TIME_MULTIPLIER, SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
 from SpectrometerOptoskyConnection.Constants import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
@@ -20,6 +20,8 @@ class SpectrometerConnection:
 
         # set start accumulation time
         self.integral_time: int = START_INTEGRAL_TIME
+        # set start waiting for response time
+        self.waiting_time = self.integral_time * WAITING_TIME_MULTIPLIER
 
         # set wavelength len and empty wavelength array
         self.wavelength_range_len: int = WAVELENGTH_RANGE_LEN
@@ -62,6 +64,7 @@ class SpectrometerConnection:
     def set_integral_time(self, new_integral_time: int):
         if new_integral_time > 0:
             self.integral_time = new_integral_time
+            self.waiting_time = new_integral_time * WAITING_TIME_MULTIPLIER
         else:
             raise Exception(f"an able to set integral_time = {new_integral_time}")
 
@@ -74,7 +77,8 @@ class SpectrometerConnection:
 
 
     # function trying to find expect_answer in spectrometer text flow
-    def wait_for_response(self,  expect_answer: str, waiting_time: int = 5):
+    def wait_for_response(self,  expect_answer: str, waiting_time: int):
+        waiting_time = max(waiting_time, MINIMUM_WAITING_TIME)
         try:
             # wait for answer
             self.process.expect(expect_answer, timeout=waiting_time)
@@ -84,7 +88,8 @@ class SpectrometerConnection:
 
 
     # function trying to find expect_answer in spectrometer text flow and return all test before it
-    def read_until_response(self,  expect_answer: str, waiting_time: int = 5):
+    def read_until_response(self,  expect_answer: str, waiting_time: int):
+        waiting_time = max(waiting_time, MINIMUM_WAITING_TIME)
         # wait for answer
         self.wait_for_response(expect_answer, waiting_time=waiting_time)
 
@@ -102,9 +107,9 @@ class SpectrometerConnection:
         # try to connect
         self.send_command(command_id)
         # checking connection
-        self.wait_for_response(expected_answers[0])
+        self.wait_for_response(expected_answers[0], MINIMUM_WAITING_TIME)
         # skip before next request
-        self.wait_for_response(expected_answers[1])
+        self.wait_for_response(expected_answers[1], MINIMUM_WAITING_TIME)
         return self
 
 
@@ -146,21 +151,24 @@ class SpectrometerConnection:
         self.send_command(command_id)
 
         # checking that the wavelength range has been received
-        self.wait_for_response(expected_answers[0])
+        self.wait_for_response(expected_answers[0], MINIMUM_WAITING_TIME)
         # get data from response
-        response = self.read_until_response(expected_answers[1])
+        response = self.read_until_response(expected_answers[1], MINIMUM_WAITING_TIME)
         data = self.split_spectrometer_response(response, self.wavelength_range_len)
         # set wavelength range if we got it
         if data is not None:
             self.wavelength_range = data
 
         # skip before next request
-        self.wait_for_response(expected_answers[2])
+        self.wait_for_response(expected_answers[2], MINIMUM_WAITING_TIME)
         return self
 
 
     # function to retrieve and set dark spectrum
     def retrieve_and_set_dark_spectrum(self):
+        # time we wait for data (seconds)
+        waiting_time = self.waiting_time / 1000
+
         # get command parameters
         command_id = self.Commands[self.Get_dark_spectrum][0]
         expected_answers = self.Commands[self.Get_dark_spectrum][1]
@@ -169,14 +177,14 @@ class SpectrometerConnection:
         self.send_command(command_id)
 
         # wait for integral time request
-        self.wait_for_response(expected_answers[0])
+        self.wait_for_response(expected_answers[0], waiting_time)
         # send integral time
         self.send_command(str(self.integral_time))
 
         # checking that the integral time has been set and data has been received
-        self.wait_for_response(expected_answers[1])
+        self.wait_for_response(expected_answers[1], waiting_time)
         # get data from response
-        response = self.read_until_response(expected_answers[2])
+        response = self.read_until_response(expected_answers[2], waiting_time)
         data = self.split_spectrometer_response(response, self.spectrum_len)
         # set dark spectrum if we got
         if data is not None:
@@ -186,12 +194,15 @@ class SpectrometerConnection:
             self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
         # skip before next request
-        self.wait_for_response(expected_answers[3])
+        self.wait_for_response(expected_answers[3], waiting_time)
         return self
 
 
     # function to retrieve and set current spectrum
     def retrieve_and_set_current_spectrum(self):
+        # time we wait for data (seconds)
+        waiting_time = self.waiting_time / 1000
+
         # get command parameters
         command_id = self.Commands[self.Get_current_spectrum][0]
         expected_answers = self.Commands[self.Get_current_spectrum][1]
@@ -200,14 +211,14 @@ class SpectrometerConnection:
         self.send_command(command_id)
 
         # wait for integral time request
-        self.wait_for_response(expected_answers[0])
+        self.wait_for_response(expected_answers[0], waiting_time)
         # send integral time
         self.send_command(str(self.integral_time))
 
         # checking that the integral time has been set and data has been received
-        self.wait_for_response(expected_answers[1])
+        self.wait_for_response(expected_answers[1], waiting_time)
         # get data from response
-        response = self.read_until_response(expected_answers[2])
+        response = self.read_until_response(expected_answers[2], waiting_time)
         data = self.split_spectrometer_response(response, self.spectrum_len)
         # set current spectrum if we got
         if data is not None:
@@ -216,7 +227,7 @@ class SpectrometerConnection:
             self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
         # skip before next request
-        self.wait_for_response(expected_answers[3])
+        self.wait_for_response(expected_answers[3], waiting_time)
         return self
 
 

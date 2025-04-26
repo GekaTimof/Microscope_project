@@ -1,5 +1,7 @@
 import os
 
+from wheel.wheelfile import MINIMUM_TIMESTAMP
+
 # Path to base directory
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,5 +42,7 @@ OptoskySpectrometerCommands = {
 WAVELENGTH_RANGE_LEN = 1024
 SPECTRUM_LEN = WAVELENGTH_RANGE_LEN
 START_INTEGRAL_TIME = 10
+WAITING_TIME_MULTIPLIER = 2
+MINIMUM_WAITING_TIME = 5
 
 MAX_INTEGRAL_TIME = 99999

@@ -4,7 +4,7 @@ import pwd
 import getpass
 import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
-    QPushButton, QShortcut
+    QPushButton, QShortcut, QMessageBox
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon, QKeySequence
@@ -60,23 +60,30 @@ class DataThread(QThread):
 
 
     # function to save spectrum data (X  Y) to chosen folder
+    # TODO add progress bar
     def save_spectrum_data_to_folder(self, folder):
         self.mutex.lock()
-        # get wavelength_range
-        x_data = self.connection.return_wavelength_range()
-        # get real real_current_spectrum (current_spectrum - dark_spectrum)
-        y_data = self.connection.return_real_current_spectrum()
-        # generate array of text lines
-        data = generate_spectrum_data_array(X=x_data, Y=y_data)
-        # generate name for file for data
-        file_name = generate_spectrum_file_name(prefix=self.connection.return_sub_parameter_text())
+        try:
+            # get wavelength_range
+            x_data = self.connection.return_wavelength_range()
+            # get real real_current_spectrum (current_spectrum - dark_spectrum)
+            y_data = self.connection.return_real_current_spectrum()
+            # generate array of text lines
+            data = generate_spectrum_data_array(X=x_data, Y=y_data)
+            # generate name for file for data
+            file_name = generate_spectrum_file_name(prefix=self.connection.return_sub_parameter_text())
 
-        # save data like file to folder (if we have data)
-        if data is not None:
-            save_data_to_folder(data, file_name, folder)
-        else:
-            print("Not enough data (X Y) to save it")
-        self.mutex.unlock()
+            # save data like file to folder (if we have data)
+            if data is not None:
+                save_data_to_folder(data, file_name, folder)
+            else:
+                print("Not enough data (X Y) to save it")
+            self.mutex.unlock()
+
+            return True
+        except:
+            self.mutex.unlock()
+            return False
 
 
     # function to update data in thread
@@ -233,10 +240,16 @@ class GraphApp(QWidget):
 
     # function to save file with data to selected folder
     def save_spectrum_data(self):
-        directory = self.dir_input.text()
-        if not directory:
+        directory = ""
+        try:
+            directory = self.dir_input.text()
+        except:
             print("No directory selected!")
+            QMessageBox.warning(self, "No directory selected!")
             return
+
+        # message about starting data saving
+        # self.status_label.setText()
 
         # get home directory of user in whose directory the program is located
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -247,9 +260,13 @@ class GraphApp(QWidget):
         # check that use try to save data to home directory
         if not directory.startswith(home_dir):
             print("⚠ Error: Saving outside the home directory is prohibited!")
+            QMessageBox.warning(self, "⚠ Error: Saving outside the home directory is prohibited!")
             return
 
-        self.data_thread.save_spectrum_data_to_folder(folder=directory)
+        if self.data_thread.save_spectrum_data_to_folder(folder=directory):
+            print("data was saved")
+        else:
+            print("data wasn't saved")
 
 
     # function to reset graphic zoom
@@ -264,6 +281,13 @@ class GraphApp(QWidget):
                 self.graph_widget.setXRange(min_x, max_x)
                 self.graph_widget.setYRange(min_y, max_y)
 
+
+def main():
+    app = QApplication(sys.argv)
+    # start in normal mode
+    window = GraphApp()
+    window.show()
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

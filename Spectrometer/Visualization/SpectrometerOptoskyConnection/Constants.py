@@ -42,11 +42,13 @@ OptoskySpectrometerCommands = {
     Command_get_current_spectrum: ("31", ["input", "Count", "=====", "Enter :"]),
 }
 
-# Spectrometer params (will be automated)
+# Spectrometer params
 WAVELENGTH_RANGE_LEN = 1024
 SPECTRUM_LEN = WAVELENGTH_RANGE_LEN
+OVERILLUMINATION_THRESHOLD = 65535
 START_INTEGRAL_TIME = 10
+MAX_INTEGRAL_TIME = 99999
+
+# Params for request to spectrometer
 WAITING_TIME_MULTIPLIER = 2
 MINIMUM_WAITING_TIME = 5
-
-MAX_INTEGRAL_TIME = 99999

@@ -2,7 +2,7 @@ import os
 import pexpect
 import numpy as np
 
-from SpectrometerOptoskyConnection.Constants import MINIMUM_WAITING_TIME, WAITING_TIME_MULTIPLIER, SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
+from SpectrometerOptoskyConnection.Constants import OVERILLUMINATION_THRESHOLD, MINIMUM_WAITING_TIME, WAITING_TIME_MULTIPLIER, SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
 from SpectrometerOptoskyConnection.Constants import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
@@ -35,6 +35,8 @@ class SpectrometerConnection:
 
         # set sub parameter (True - is we set dark spectrum, False - is we don't set dark spectrum )
         self.sub = False
+        # set over-illumination parameter
+        self.overillumination = False
 
         # set working directory
         self.working_directory = SPECTROMETER_DIR
@@ -134,11 +136,14 @@ class SpectrometerConnection:
         # Convert list to numpy array
         data = np.array(data, dtype=np.float32)
 
-
         # check array total len
         if len(data) != data_len:
             return None
         return data
+
+
+    def check_overillumination(self):
+        self.overillumination = np.max(self.wavelength_range) >= OVERILLUMINATION_THRESHOLD
 
 
     # function to retrieve and set wavelength range
@@ -155,6 +160,7 @@ class SpectrometerConnection:
         # get data from response
         response = self.read_until_response(expected_answers[1], MINIMUM_WAITING_TIME)
         data = self.split_spectrometer_response(response, self.wavelength_range_len)
+
         # set wavelength range if we got it
         if data is not None:
             self.wavelength_range = data
@@ -275,6 +281,10 @@ class SpectrometerConnection:
         else:
             return "no_sub"
 
+
+    # function return overillumination parameter
+    def return_overillumination(self):
+        return self.overillumination
 
 
 if __name__ == "__main__":

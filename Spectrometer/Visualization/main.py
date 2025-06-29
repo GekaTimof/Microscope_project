@@ -9,20 +9,24 @@ from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon, QKeySequence
 
-# spectrometer connection class
+# Spectrometer connection class
 from SpectrometerOptoskyConnection import SpectrometerConnection
-# visual_testing function and links for test data
-from SpectrometerOptoskyConnection.GetTestData import get_data_from_file
-from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH, TEST_DATA_Y_PATH, MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
-# links to assets
+# Spectrometer params (constants)
+from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
+# Links to assets
 from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE
-# functions to save spectrum data
+# Functions to save spectrum data
 from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
-# application text
+# Application text
 from SpectrometerApplication import TextConstants as app_text
-# base directory to save spectrum datas
+# Base directory to save spectrum datas
 from SpectrometerOptoskyConnection.Constants import BASE_SAVE_SPECTRUM_DIR
+# (only for testing mode) Links for test data and visual_testing function
+from SpectrometerOptoskyConnection.GetTestData import get_data_from_file
+from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
 
+
+#------------------------------------------------- Spectrometer thread -------------------------------------------------
 
 # Thread to connect and get data from spectrometer
 class DataThread(QThread):
@@ -33,6 +37,8 @@ class DataThread(QThread):
         self.testing = testing
         self.running = True
         self.mutex = QMutex()
+        self.overillumination = False
+
         # start connection to spectrometer
         if not (self.testing):
             self.connection = SpectrometerConnection()
@@ -90,8 +96,10 @@ class DataThread(QThread):
 
     # function to update data in thread
     def run(self):
+        # get test y data (in testing mode)
         if self.testing:
             y_data_test = get_data_from_file(TEST_DATA_Y_PATH)
+
         while self.running:
             self.mutex.lock()
             if self.testing:
@@ -101,12 +109,16 @@ class DataThread(QThread):
                 y_data = y_data_test
             else:
                 # get real data from spectrometer
-                # send command to updating current_spectrum (get ntw values from spectrometer)
+                # send command to updating current_spectrum (get new values from spectrometer)
                 self.connection.retrieve_and_set_current_spectrum()
                 # get wavelength_range
                 x_data = self.connection.return_wavelength_range()
                 # get real real_current_spectrum (current_spectrum - dark_spectrum)
                 y_data = self.connection.return_real_current_spectrum()
+
+                # check overillumination
+                self.connection.check_overillumination()
+                self.overillumination = self.connection.return_overillumination()
 
             self.new_data.emit(x_data, y_data)
             self.mutex.unlock()
@@ -120,6 +132,7 @@ class DataThread(QThread):
         self.wait()
 
 
+#------------------------------------------------- Application thread --------------------------------------------------
 
 # Interface for spectrometer application
 class GraphApp(QWidget):
@@ -138,12 +151,19 @@ class GraphApp(QWidget):
 
         layout = QHBoxLayout()
 
+        # widget with graph
         self.graph_widget = pg.PlotWidget()
         self.graph_widget.setBackground("w")
         self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL)
         self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL)
         self.curve = self.graph_widget.plot(pen="b")
         self.graph_widget.setLimits(minYRange=MIN_GRAPHIC_Y_RANGE)
+
+        # overillumination label (will appear over graph)
+        self.overillumination_label = pg.TextItem("Overillumination!", color='r', anchor=(0.5, 0))
+        self.overillumination_label.setZValue(2)
+        self.overillumination_label.hide()
+        self.graph_widget.addItem(self.overillumination_label)
 
         # input field to set integral time
         self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL)
@@ -240,6 +260,17 @@ class GraphApp(QWidget):
     # function to set X and Y to graph
     def update_graph(self, x_data, y_data):
         self.curve.setData(x_data, y_data)
+
+        if self.data_thread.overillumination:
+            # set warning positon
+            x_center = np.mean(x_data)
+            y_center = (np.min(y_data) + np.max(y_data)) / 2
+            self.overillumination_label.setPos(x_center, y_center)
+            # show warning
+            self.overillumination_label.show()
+        else:
+            # hide warning
+            self.overillumination_label.hide()
 
 
     # function to stap thread (spectrometer connection)

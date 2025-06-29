@@ -2,6 +2,10 @@ import os
 
 from wheel.wheelfile import MINIMUM_TIMESTAMP
 
+# Path to base save directory (directory to save spectrum datas)
+# TODO clear this field before release
+BASE_SAVE_SPECTRUM_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrometer/save_data_folder"
+
 # Path to base directory
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 

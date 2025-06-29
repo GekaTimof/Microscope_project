@@ -1,13 +1,14 @@
+# Side imports
 import os
 import sys
 import pwd
-import getpass
 import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
     QPushButton, QShortcut, QMessageBox
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon, QKeySequence
+
 # spectrometer connection class
 from SpectrometerOptoskyConnection import SpectrometerConnection
 # visual_testing function and links for test data
@@ -19,7 +20,8 @@ from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE
 from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
 # application text
 from SpectrometerApplication import TextConstants as app_text
-
+# base directory to save spectrum datas
+from SpectrometerOptoskyConnection.Constants import BASE_SAVE_SPECTRUM_DIR
 
 
 # Thread to connect and get data from spectrometer
@@ -32,7 +34,7 @@ class DataThread(QThread):
         self.running = True
         self.mutex = QMutex()
         # start connection to spectrometer
-        if not (testing):
+        if not (self.testing):
             self.connection = SpectrometerConnection()
             self.connection.open_spectrometer()
             self.connection.retrieve_and_set_wavelength_range()
@@ -174,9 +176,14 @@ class GraphApp(QWidget):
         dir_layout.addWidget(self.dir_input)
         dir_layout.addWidget(self.dir_button)
 
+        # check if user set base dir in constants
+        if os.path.isdir(BASE_SAVE_SPECTRUM_DIR):
+            self.dir_input.setText(BASE_SAVE_SPECTRUM_DIR)
+
         # button to save spectrum data
         self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON)
         self.save_button.clicked.connect(self.save_spectrum_data)
+
         # set key combination to save spectrum data
         shortcut_save_spectrum_data = QShortcut(QKeySequence("Ctrl+S"), self)
         shortcut_save_spectrum_data.activated.connect(self.save_spectrum_data)
@@ -212,7 +219,10 @@ class GraphApp(QWidget):
         options = QFileDialog.Option.DontUseNativeDialog
         options |= QFileDialog.Option.ReadOnly
 
-        directory = QFileDialog.getExistingDirectory(self, "Select Directory", home_dir, options)
+        # if user already select directory we will set it to selection field, if not select, we will set home directory
+        current_directory = self.dir_input.text() if os.path.isdir(self.dir_input.text()) else home_dir
+
+        directory = QFileDialog.getExistingDirectory(self, "Select Directory", current_directory, options)
         if directory:
             # check that user try to select folder in home directory
             if not directory.startswith(home_dir):
@@ -240,7 +250,6 @@ class GraphApp(QWidget):
 
     # function to save file with data to selected folder
     def save_spectrum_data(self):
-        directory = ""
         try:
             directory = self.dir_input.text()
         except:
@@ -282,17 +291,9 @@ class GraphApp(QWidget):
                 self.graph_widget.setYRange(min_y, max_y)
 
 
-def main():
-    app = QApplication(sys.argv)
-    # start in normal mode
-    window = GraphApp()
-    window.show()
-    sys.exit(app.exec_())
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # start in normal mode
-    window = GraphApp()
+    window = GraphApp(testing=True)
     window.show()
     sys.exit(app.exec_())

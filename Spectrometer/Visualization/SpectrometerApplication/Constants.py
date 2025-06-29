@@ -6,6 +6,7 @@ import os
 FONT_SIZE = 14
 FONT = "Arial"
 WARNING_FONT_SIZE = 24
+COORDINATES_FONT_SIZE = 11
 
 #---------------------------------------------------- NOT User Zone ----------------------------------------------------
 

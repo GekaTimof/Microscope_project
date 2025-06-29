@@ -14,7 +14,7 @@ from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE
+from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
 # Functions to save spectrum data
 from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
 # Application text
@@ -143,7 +143,6 @@ class GraphApp(QWidget):
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
 
-
     def init_ui(self):
         self.setWindowTitle(app_text.WINDOW_TITLE)
         self.setGeometry(100, 100, 1100, 600)
@@ -154,6 +153,7 @@ class GraphApp(QWidget):
         # widget with graph
         self.graph_widget = pg.PlotWidget()
         self.graph_widget.setBackground("w")
+        self.graph_widget.showGrid(x=True, y=True, alpha=0.7)
         self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL)
         self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL)
         self.curve = self.graph_widget.plot(pen="b")
@@ -165,6 +165,15 @@ class GraphApp(QWidget):
         self.overillumination_label.setZValue(2)
         self.overillumination_label.hide()
         self.graph_widget.addItem(self.overillumination_label)
+
+        # label for mouse coordinates
+        self.coord_label = pg.TextItem("", anchor=(0, 1), color='k')
+        self.coord_label.setFont(QFont(FONT, COORDINATES_FONT_SIZE))
+        self.graph_widget.addItem(self.coord_label)
+        self.coord_label.hide()
+
+        # connect mouse to action (get coordinates)
+        self.graph_widget.scene().sigMouseMoved.connect(self.on_mouse_move)
 
         # input field to set integral time
         self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL)
@@ -289,9 +298,6 @@ class GraphApp(QWidget):
             QMessageBox.warning(self, "No directory selected!")
             return
 
-        # message about starting data saving
-        # self.status_label.setText()
-
         # get home directory of user in whose directory the program is located
         script_dir = os.path.dirname(os.path.realpath(__file__))
         dir_stat = os.stat(script_dir)
@@ -322,6 +328,20 @@ class GraphApp(QWidget):
                 self.graph_widget.setXRange(min_x, max_x)
                 self.graph_widget.setYRange(min_y, max_y)
 
+    # function to get mouse coordinates when it on the graph
+    def on_mouse_move(self, pos):
+        vb = self.graph_widget.getViewBox()
+        if vb.sceneBoundingRect().contains(pos):
+            mouse_point = vb.mapSceneToView(pos)
+            x, y = mouse_point.x(), mouse_point.y()
+            self.coord_label.setText(f"x={int(x)} y={int(y)}")
+            self.coord_label.setPos(x, y)
+            self.coord_label.show()
+        else:
+            self.coord_label.hide()
+
+
+#-------------------------------------------------- Application start --------------------------------------------------
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

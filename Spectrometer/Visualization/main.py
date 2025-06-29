@@ -7,14 +7,14 @@ from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBox
     QPushButton, QShortcut, QMessageBox
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
-from PyQt5.QtGui import QIcon, QKeySequence
+from PyQt5.QtGui import QIcon, QKeySequence, QFont
 
 # Spectrometer connection class
 from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE
+from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE
 # Functions to save spectrum data
 from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
 # Application text
@@ -146,7 +146,7 @@ class GraphApp(QWidget):
 
     def init_ui(self):
         self.setWindowTitle(app_text.WINDOW_TITLE)
-        self.setGeometry(100, 100, 900, 500)
+        self.setGeometry(100, 100, 1100, 600)
         self.setWindowIcon(QIcon(APP_ICON))
 
         layout = QHBoxLayout()
@@ -161,6 +161,7 @@ class GraphApp(QWidget):
 
         # overillumination label (will appear over graph)
         self.overillumination_label = pg.TextItem("Overillumination!", color='r', anchor=(0.5, 0))
+        self.overillumination_label.setFont(QFont(FONT, WARNING_FONT_SIZE))
         self.overillumination_label.setZValue(2)
         self.overillumination_label.hide()
         self.graph_widget.addItem(self.overillumination_label)
@@ -324,6 +325,8 @@ class GraphApp(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    # set font settings
+    app.setFont(QFont(FONT, FONT_SIZE))
     # start in normal mode
     window = GraphApp(testing=True)
     window.show()

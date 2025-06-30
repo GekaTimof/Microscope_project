@@ -4,7 +4,7 @@ import sys
 import pwd
 import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
-    QPushButton, QShortcut, QMessageBox
+    QPushButton, QShortcut, QMessageBox, QGraphicsProxyWidget
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon, QKeySequence, QFont
@@ -150,7 +150,7 @@ class GraphApp(QWidget):
 
         layout = QHBoxLayout()
 
-        # widget with graph
+        # Widget with graph
         self.graph_widget = pg.PlotWidget()
         self.graph_widget.setBackground("w")
         self.graph_widget.showGrid(x=True, y=True, alpha=0.7)
@@ -159,23 +159,24 @@ class GraphApp(QWidget):
         self.curve = self.graph_widget.plot(pen="b")
         self.graph_widget.setLimits(minYRange=MIN_GRAPHIC_Y_RANGE)
 
-        # overillumination label (will appear over graph)
+        # Label for overillumination (will appear over graph)
         self.overillumination_label = pg.TextItem("Overillumination!", color='r', anchor=(0.5, 0))
         self.overillumination_label.setFont(QFont(FONT, WARNING_FONT_SIZE))
         self.overillumination_label.setZValue(2)
         self.overillumination_label.hide()
         self.graph_widget.addItem(self.overillumination_label)
 
-        # label for mouse coordinates
+        # Label for mouse coordinates
         self.coord_label = pg.TextItem("", anchor=(0, 1), color='k')
         self.coord_label.setFont(QFont(FONT, COORDINATES_FONT_SIZE))
         self.graph_widget.addItem(self.coord_label)
+        self.coord_label.setZValue(2)
         self.coord_label.hide()
 
         # connect mouse to action (get coordinates)
         self.graph_widget.scene().sigMouseMoved.connect(self.on_mouse_move)
 
-        # input field to set integral time
+        # Field (input) to set integral time
         self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL)
         self.time_input = QSpinBox()
         self.time_input.setRange(1, MAX_INTEGRAL_TIME)
@@ -185,15 +186,15 @@ class GraphApp(QWidget):
         # Connect the valueChanged signal to the update_integral_time slot
         self.time_input.valueChanged.connect(self.update_integral_time)
 
-        # button to set dark spectrum
+        # Button to set dark spectrum
         self.set_dark_spectrum_button = QPushButton(app_text.SET_DARK_SPECTRUM_BUTTON)
         self.set_dark_spectrum_button.clicked.connect(self.data_thread.set_dark_spectrum)
 
-        # button to clear dark spectrum
+        # Button to clear dark spectrum
         self.clear_dark_spectrum_button = QPushButton(app_text.CLEAR_DARK_SPECTRUM_BUTTON)
         self.clear_dark_spectrum_button.clicked.connect(self.data_thread.clear_dark_spectrum)
 
-        # input directory field
+        # Field to input directory
         dir_layout = QHBoxLayout()
         self.dir_label = QLabel(app_text.INPUT_DIRECTORY_LABEL)
         self.dir_input = QLineEdit()
@@ -210,7 +211,7 @@ class GraphApp(QWidget):
         if os.path.isdir(BASE_SAVE_SPECTRUM_DIR):
             self.dir_input.setText(BASE_SAVE_SPECTRUM_DIR)
 
-        # button to save spectrum data
+        # Button to save spectrum data
         self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON)
         self.save_button.clicked.connect(self.save_spectrum_data)
 
@@ -222,6 +223,12 @@ class GraphApp(QWidget):
         self.reset_zoom_button = QPushButton(app_text.RESET_ZOOM_BUTTON)
         self.reset_zoom_button.clicked.connect(self.reset_graph_view)
 
+        # Button to switch theme (Light and Dark)
+        self.theme_button = QPushButton("Switch to Dark Theme")
+        self.theme_button.setCheckable(True)
+        self.theme_button.toggled.connect(self.toggle_theme)
+
+        # Control layout creation (total layout)
         control_layout = QVBoxLayout()
         control_layout.addWidget(self.time_label)
         control_layout.addWidget(self.time_input)
@@ -231,6 +238,7 @@ class GraphApp(QWidget):
         control_layout.addLayout(dir_layout)
         control_layout.addWidget(self.save_button)
         control_layout.addWidget(self.reset_zoom_button)
+        control_layout.addWidget(self.theme_button)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget,4)
@@ -328,17 +336,60 @@ class GraphApp(QWidget):
                 self.graph_widget.setXRange(min_x, max_x)
                 self.graph_widget.setYRange(min_y, max_y)
 
+
     # function to get mouse coordinates when it on the graph
     def on_mouse_move(self, pos):
         vb = self.graph_widget.getViewBox()
         if vb.sceneBoundingRect().contains(pos):
             mouse_point = vb.mapSceneToView(pos)
             x, y = mouse_point.x(), mouse_point.y()
-            self.coord_label.setText(f"x={int(x)} y={int(y)}")
-            self.coord_label.setPos(x, y)
+            text = f"x={int(x)} y={int(y)}"
+            self.coord_label.setText(text)
+            self.coord_label.setPos(x-COORDINATES_FONT_SIZE*len(text)/2, y)
             self.coord_label.show()
         else:
             self.coord_label.hide()
+
+
+    # function to switch theme (Light and Dark)
+    def toggle_theme(self, checked):
+        if checked:
+            self.set_dark_theme()
+            self.theme_button.setText("Switch to Light Theme")
+        else:
+            self.set_light_theme()
+            self.theme_button.setText("Switch to Dark Theme")
+
+
+    def set_dark_theme(self):
+        dark_style = """
+            QWidget {
+                background-color: #2b2b2b;
+                color: #f0f0f0;
+            }
+            QPushButton {
+                background-color: #3c3f41;
+                color: white;
+                border: 1px solid #5c5c5c;
+            }
+            QLineEdit, QSpinBox {
+                background-color: #3c3f41;
+                color: white;
+                border: 1px solid #5c5c5c;
+            }
+            QLabel {
+                color: white;
+            }
+        """
+        self.setStyleSheet(dark_style)
+        self.graph_widget.setBackground('k')  # black background
+        self.curve.setPen('y')  # yellow line
+
+
+    def set_light_theme(self):
+        self.setStyleSheet("")
+        self.graph_widget.setBackground('w')  # white background
+        self.curve.setPen('b')  # blue line
 
 
 #-------------------------------------------------- Application start --------------------------------------------------

@@ -343,10 +343,20 @@ class GraphApp(QWidget):
         if vb.sceneBoundingRect().contains(pos):
             mouse_point = vb.mapSceneToView(pos)
             x, y = mouse_point.x(), mouse_point.y()
-            text = f"x={int(x)} y={int(y)}"
-            self.coord_label.setText(text)
-            self.coord_label.setPos(x-COORDINATES_FONT_SIZE*len(text)/2, y)
-            self.coord_label.show()
+
+            view_rect = vb.viewRect()
+            margin_x = (view_rect.right() - view_rect.left()) * 0.03
+            margin_y = (view_rect.bottom() - view_rect.top()) * 0.03
+
+            if (view_rect.left() + margin_x <= x <= view_rect.right() - margin_x and
+                view_rect.top() + margin_y <= y <= view_rect.bottom() - margin_y):
+
+                text = f"x={int(x)} y={int(y)}"
+                self.coord_label.setText(text)
+                self.coord_label.setPos(x, y)
+                self.coord_label.show()
+            else:
+                self.coord_label.hide()
         else:
             self.coord_label.hide()
 

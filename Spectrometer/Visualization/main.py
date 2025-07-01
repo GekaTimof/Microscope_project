@@ -15,7 +15,7 @@ from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
+from SpectrometerApplication.Constants import BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
 # Functions to save spectrum data
 from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
 # Application text
@@ -69,7 +69,6 @@ class DataThread(QThread):
 
 
     # function to save spectrum data (X  Y) to chosen folder
-    # TODO add progress bar
     def save_spectrum_data_to_folder(self, folder):
         self.mutex.lock()
         try:
@@ -85,8 +84,8 @@ class DataThread(QThread):
             # save data like file to folder (if we have data)
             if data is not None:
                 save_data_to_folder(data, file_name, folder)
-            else:
-                print("Not enough data (X Y) to save it")
+            # else:
+            #     print("Not enough data (X Y) to save it")
             self.mutex.unlock()
 
             return True
@@ -145,7 +144,14 @@ class GraphApp(QWidget):
         self.data_thread.start()
 
     def init_ui(self):
-        self.setWindowTitle(app_text.WINDOW_TITLE)
+        # Application base language
+        if BASE_LANGUAGE in app_text.APPLICATION_LANGUAGES:
+            self.language = BASE_LANGUAGE
+        else:
+            self.language = app_text.APPLICATION_LANGUAGES[0]
+
+        # Main Window
+        self.setWindowTitle(app_text.WINDOW_TITLE[self.language])
         self.setGeometry(100, 100, 1100, 600)
         self.setWindowIcon(QIcon(APP_ICON))
 
@@ -155,13 +161,13 @@ class GraphApp(QWidget):
         self.graph_widget = pg.PlotWidget()
         self.graph_widget.setBackground("w")
         self.graph_widget.showGrid(x=True, y=True, alpha=0.75)
-        self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL)
-        self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL)
+        self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL[self.language])
+        self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL[self.language])
         self.curve = self.graph_widget.plot(pen="b")
         self.graph_widget.setLimits(minYRange=MIN_GRAPHIC_Y_RANGE)
 
         # Label for overillumination (will appear over graph)
-        self.overillumination_label = pg.TextItem("Overillumination!", color='r', anchor=(0.5, 0))
+        self.overillumination_label = pg.TextItem(app_text.OVERILLUMINATION_WARNING_TEXT[self.language], color='r', anchor=(0.5, 0))
         self.overillumination_label.setFont(QFont(FONT, WARNING_FONT_SIZE))
         self.overillumination_label.setZValue(2)
         self.overillumination_label.hide()
@@ -177,7 +183,7 @@ class GraphApp(QWidget):
         self.graph_widget.scene().sigMouseMoved.connect(self.on_mouse_move)
 
         # Field (input) to set integral time
-        self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL)
+        self.time_label = QLabel(app_text.INPUT_INTEGRAL_TIME_LABEL[self.language])
         self.time_input = QSpinBox()
         self.time_input.setRange(1, MAX_INTEGRAL_TIME)
         self.time_input.setValue(START_INTEGRAL_TIME)
@@ -187,20 +193,20 @@ class GraphApp(QWidget):
         self.time_input.valueChanged.connect(self.update_integral_time)
 
         # Button to set dark spectrum
-        self.set_dark_spectrum_button = QPushButton(app_text.SET_DARK_SPECTRUM_BUTTON)
+        self.set_dark_spectrum_button = QPushButton(app_text.SET_DARK_SPECTRUM_BUTTON[self.language])
         self.set_dark_spectrum_button.clicked.connect(self.data_thread.set_dark_spectrum)
 
         # Button to clear dark spectrum
-        self.clear_dark_spectrum_button = QPushButton(app_text.CLEAR_DARK_SPECTRUM_BUTTON)
+        self.clear_dark_spectrum_button = QPushButton(app_text.CLEAR_DARK_SPECTRUM_BUTTON[self.language])
         self.clear_dark_spectrum_button.clicked.connect(self.data_thread.clear_dark_spectrum)
 
         # Field to input directory
         dir_layout = QHBoxLayout()
-        self.dir_label = QLabel(app_text.INPUT_DIRECTORY_LABEL)
+        self.dir_label = QLabel(app_text.INPUT_DIRECTORY_LABEL[self.language])
         self.dir_input = QLineEdit()
-        self.dir_input.setPlaceholderText(app_text.INPUT_PLACEHOLDER_TEXT)
+        self.dir_input.setPlaceholderText(app_text.INPUT_PLACEHOLDER_TEXT[self.language])
         self.dir_input.setReadOnly(True)
-        self.dir_button = QPushButton(app_text.INPUT_DIRECTORY_BUTTON)
+        self.dir_button = QPushButton(app_text.INPUT_DIRECTORY_BUTTON[self.language])
         self.dir_button.clicked.connect(self.select_directory)
 
         # create directory input layout
@@ -211,21 +217,21 @@ class GraphApp(QWidget):
             self.dir_input.setText(BASE_SAVE_SPECTRUM_DIR)
 
         # Button to save spectrum data
-        self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON)
+        self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON[self.language])
         self.save_button.clicked.connect(self.save_spectrum_data)
         # set key combination to save spectrum data
         shortcut_save_spectrum_data = QShortcut(QKeySequence("Ctrl+S"), self)
         shortcut_save_spectrum_data.activated.connect(self.save_spectrum_data)
 
         # Button to reset graph zoom
-        self.reset_zoom_button = QPushButton(app_text.RESET_ZOOM_BUTTON)
+        self.reset_zoom_button = QPushButton(app_text.RESET_ZOOM_BUTTON[self.language])
         self.reset_zoom_button.clicked.connect(self.reset_graph_view)
         # set key combination to reset graph zoom
         shortcut_reset_zoom = QShortcut(QKeySequence("Ctrl+R"), self)
         shortcut_reset_zoom.activated.connect(self.reset_graph_view)
 
         # Button to switch theme (Light and Dark)
-        self.theme_button = QPushButton("Switch to Dark Theme")
+        self.theme_button = QPushButton(app_text.SWITCH_TO_DARK_THEME_BUTTON[self.language])
         self.theme_button.setCheckable(True)
         self.theme_button.toggled.connect(self.toggle_theme)
         # chek if user set Dark theme like base theme
@@ -272,11 +278,12 @@ class GraphApp(QWidget):
         # if user already select directory we will set it to selection field, if not select, we will set home directory
         current_directory = self.dir_input.text() if os.path.isdir(self.dir_input.text()) else home_dir
 
-        directory = QFileDialog.getExistingDirectory(self, "Select Directory", current_directory, options)
+        directory = QFileDialog.getExistingDirectory(self, app_text.INPUT_DIRECTORY_WINDOW_NAME[self.language],
+                                                     current_directory, options)
         if directory:
             # check that user try to select folder in home directory
             if not directory.startswith(home_dir):
-                print("⚠ Error: You can only select folders in your home directory!")
+                QMessageBox.warning(self, app_text.WARNING_SELECT_OUT_OF_HOME[self.language])
                 return
 
             self.dir_input.setText(directory)
@@ -314,7 +321,7 @@ class GraphApp(QWidget):
         try:
             directory = self.dir_input.text()
         except:
-            QMessageBox.warning(self, "No directory selected", "Please select a directory to save the data.")
+            QMessageBox.warning(self, app_text.WARNING_NO_DIRECTORY_SELECTED[self.language])
             return
 
         # get home directory of user in whose directory the program is located
@@ -325,7 +332,7 @@ class GraphApp(QWidget):
 
         # check that use try to save data to home directory
         if not directory.startswith(home_dir):
-            QMessageBox.warning(self, "Access Denied", "⚠ Saving outside the home directory is prohibited!")
+            QMessageBox.warning(self, app_text.WARNING_SAWING_OUT_OF_HOME[self.language])
             return
 
         # Show progress bar and simulate progress
@@ -342,7 +349,7 @@ class GraphApp(QWidget):
         self.progress_bar.setVisible(False)
 
         if not success:
-            QMessageBox.critical(self, "Error", "Failed to save spectrum data.")
+            QMessageBox.critical(self, "Error", app_text.CRITICAL_SAVING_FAILED[self.language])
 
     # function to reset graphic zoom
     def reset_graph_view(self):
@@ -385,41 +392,25 @@ class GraphApp(QWidget):
     def toggle_theme(self, checked):
         if checked:
             self.set_dark_theme()
-            self.theme_button.setText("Switch to Light Theme")
+            self.theme_button.setText(app_text.SWITCH_TO_LIGHT_THEME_BUTTON[self.language])
         else:
             self.set_light_theme()
-            self.theme_button.setText("Switch to Dark Theme")
+            self.theme_button.setText(app_text.SWITCH_TO_DARK_THEME_BUTTON[self.language])
 
 
     def set_dark_theme(self):
-        dark_style = """
-            QWidget {
-                background-color: #2b2b2b;
-                color: #f0f0f0;
-            }
-            QPushButton {
-                background-color: #3c3f41;
-                color: white;
-            }
-            QLineEdit, QSpinBox {
-                background-color: #3c3f41;
-                color: white;
-            }
-            QLabel {
-                color: white;
-            }
-        """
-        self.coord_label.setColor("w") # white coordinates text
+        dark_style = DARK_THEME_STYLE
+        self.coord_label.setColor("w")
         self.setStyleSheet(dark_style)
-        self.graph_widget.setBackground('k')  # black background
-        self.curve.setPen('y')  # yellow line
+        self.graph_widget.setBackground('k')
+        self.curve.setPen('y')
 
 
     def set_light_theme(self):
-        self.coord_label.setColor("black") # black white coordinates text
+        self.coord_label.setColor("black")
         self.setStyleSheet("")
-        self.graph_widget.setBackground('w')  # white background
-        self.curve.setPen('b')  # blue line
+        self.graph_widget.setBackground('w')
+        self.curve.setPen('b')
 
 
 #-------------------------------------------------- Application start --------------------------------------------------

@@ -5,6 +5,9 @@ import os
 # Set Dark theme like base (True/False)
 DARK_THEME = False
 
+# Set base language ("en"/"ru")
+BASE_LANGUAGE = "en"
+
 # Font settings
 FONT_SIZE = 14
 FONT = "Arial"
@@ -25,3 +28,21 @@ APP_ICON = os.path.join(ASSETS_DIR, App_icon_name)
 # Minimum graphic Y
 MIN_GRAPHIC_Y_RANGE = 1000
 
+# Style for dark theme (this isn't full style settings)
+DARK_THEME_STYLE = """
+            QWidget {
+                background-color: #2b2b2b;
+                color: #f0f0f0;
+            }
+            QPushButton {
+                background-color: #3c3f41;
+                color: #ffffff;
+            }
+            QLineEdit, QSpinBox {
+                background-color: #3c3f41;
+                color: #ffffff;
+            }
+            QLabel {
+                color: #ffffff;
+            }
+            """

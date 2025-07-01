@@ -153,7 +153,7 @@ class GraphApp(QWidget):
 
         # Main Window
         self.setWindowTitle(app_text.WINDOW_TITLE[self.language])
-        self.setGeometry(100, 100, 1100, 600)
+        self.setGeometry(100, 100, 1200, 600)
         self.setWindowIcon(QIcon(APP_ICON))
 
         layout = QHBoxLayout()
@@ -258,6 +258,9 @@ class GraphApp(QWidget):
 
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
+        control_layout.addLayout(language_layout)
+        control_layout.addWidget(self.theme_button)
+        control_layout.addWidget(self.reset_zoom_button)
         control_layout.addWidget(self.time_label)
         control_layout.addWidget(self.time_input)
         control_layout.addWidget(self.set_dark_spectrum_button)
@@ -266,9 +269,6 @@ class GraphApp(QWidget):
         control_layout.addLayout(dir_layout)
         control_layout.addWidget(self.save_button)
         control_layout.addWidget(self.progress_bar)
-        control_layout.addWidget(self.reset_zoom_button)
-        control_layout.addWidget(self.theme_button)
-        control_layout.addLayout(language_layout)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget,4)

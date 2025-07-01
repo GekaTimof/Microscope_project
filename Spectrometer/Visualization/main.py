@@ -14,7 +14,7 @@ from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
+from SpectrometerApplication.Constants import DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
 # Functions to save spectrum data
 from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
 # Application text
@@ -153,7 +153,7 @@ class GraphApp(QWidget):
         # Widget with graph
         self.graph_widget = pg.PlotWidget()
         self.graph_widget.setBackground("w")
-        self.graph_widget.showGrid(x=True, y=True, alpha=0.7)
+        self.graph_widget.showGrid(x=True, y=True, alpha=0.75)
         self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL)
         self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL)
         self.curve = self.graph_widget.plot(pen="b")
@@ -170,7 +170,6 @@ class GraphApp(QWidget):
         self.coord_label = pg.TextItem("", anchor=(0, 1), color='k')
         self.coord_label.setFont(QFont(FONT, COORDINATES_FONT_SIZE))
         self.graph_widget.addItem(self.coord_label)
-        self.coord_label.setZValue(2)
         self.coord_label.hide()
 
         # connect mouse to action (get coordinates)
@@ -206,7 +205,6 @@ class GraphApp(QWidget):
         # create directory input layout
         dir_layout.addWidget(self.dir_input)
         dir_layout.addWidget(self.dir_button)
-
         # check if user set base dir in constants
         if os.path.isdir(BASE_SAVE_SPECTRUM_DIR):
             self.dir_input.setText(BASE_SAVE_SPECTRUM_DIR)
@@ -214,7 +212,6 @@ class GraphApp(QWidget):
         # Button to save spectrum data
         self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON)
         self.save_button.clicked.connect(self.save_spectrum_data)
-
         # set key combination to save spectrum data
         shortcut_save_spectrum_data = QShortcut(QKeySequence("Ctrl+S"), self)
         shortcut_save_spectrum_data.activated.connect(self.save_spectrum_data)
@@ -222,11 +219,19 @@ class GraphApp(QWidget):
         # Button to reset graph zoom
         self.reset_zoom_button = QPushButton(app_text.RESET_ZOOM_BUTTON)
         self.reset_zoom_button.clicked.connect(self.reset_graph_view)
+        # set key combination to reset graph zoom
+        shortcut_reset_zoom = QShortcut(QKeySequence("Ctrl+R"), self)
+        shortcut_reset_zoom.activated.connect(self.reset_graph_view)
 
         # Button to switch theme (Light and Dark)
         self.theme_button = QPushButton("Switch to Dark Theme")
         self.theme_button.setCheckable(True)
         self.theme_button.toggled.connect(self.toggle_theme)
+        # chek if user set Dark theme like base theme
+        if DARK_THEME:
+            self.theme_button.toggle()
+
+
 
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
@@ -346,7 +351,7 @@ class GraphApp(QWidget):
 
             view_rect = vb.viewRect()
             margin_x = (view_rect.right() - view_rect.left()) * 0.03
-            margin_y = (view_rect.bottom() - view_rect.top()) * 0.03
+            margin_y = (view_rect.bottom() - view_rect.top()) * 0.04
 
             if (view_rect.left() + margin_x <= x <= view_rect.right() - margin_x and
                 view_rect.top() + margin_y <= y <= view_rect.bottom() - margin_y):
@@ -380,23 +385,23 @@ class GraphApp(QWidget):
             QPushButton {
                 background-color: #3c3f41;
                 color: white;
-                border: 1px solid #5c5c5c;
             }
             QLineEdit, QSpinBox {
                 background-color: #3c3f41;
                 color: white;
-                border: 1px solid #5c5c5c;
             }
             QLabel {
                 color: white;
             }
         """
+        self.coord_label.setColor("w") # white coordinates text
         self.setStyleSheet(dark_style)
         self.graph_widget.setBackground('k')  # black background
         self.curve.setPen('y')  # yellow line
 
 
     def set_light_theme(self):
+        self.coord_label.setColor("black") # black white coordinates text
         self.setStyleSheet("")
         self.graph_widget.setBackground('w')  # white background
         self.curve.setPen('b')  # blue line

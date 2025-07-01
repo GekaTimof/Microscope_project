@@ -2,6 +2,9 @@ import os
 
 #------------------------------------------------------ User Zone ------------------------------------------------------
 
+# Set Dark theme like base (True/False)
+DARK_THEME = False
+
 # Font settings
 FONT_SIZE = 14
 FONT = "Arial"

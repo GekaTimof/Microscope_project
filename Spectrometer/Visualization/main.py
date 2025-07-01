@@ -2,8 +2,9 @@
 import os
 import sys
 import pwd
+import time
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
+from PyQt5.QtWidgets import QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
     QPushButton, QShortcut, QMessageBox, QGraphicsProxyWidget
 from PyQt5.QtCore import QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
@@ -231,7 +232,12 @@ class GraphApp(QWidget):
         if DARK_THEME:
             self.theme_button.toggle()
 
-
+        # Progress bar for data sawing
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setMinimum(0)
+        self.progress_bar.setMaximum(100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(False)
 
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
@@ -242,6 +248,7 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.dir_label)
         control_layout.addLayout(dir_layout)
         control_layout.addWidget(self.save_button)
+        control_layout.addWidget(self.progress_bar)
         control_layout.addWidget(self.reset_zoom_button)
         control_layout.addWidget(self.theme_button)
         control_layout.addStretch()
@@ -307,8 +314,7 @@ class GraphApp(QWidget):
         try:
             directory = self.dir_input.text()
         except:
-            print("No directory selected!")
-            QMessageBox.warning(self, "No directory selected!")
+            QMessageBox.warning(self, "No directory selected", "Please select a directory to save the data.")
             return
 
         # get home directory of user in whose directory the program is located
@@ -319,15 +325,24 @@ class GraphApp(QWidget):
 
         # check that use try to save data to home directory
         if not directory.startswith(home_dir):
-            print("⚠ Error: Saving outside the home directory is prohibited!")
-            QMessageBox.warning(self, "⚠ Error: Saving outside the home directory is prohibited!")
+            QMessageBox.warning(self, "Access Denied", "⚠ Saving outside the home directory is prohibited!")
             return
 
-        if self.data_thread.save_spectrum_data_to_folder(folder=directory):
-            print("data was saved")
-        else:
-            print("data wasn't saved")
+        # Show progress bar and simulate progress
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setValue(0)
+        QApplication.processEvents()
 
+        for i in range(1, 6):
+            time.sleep(0.1)
+            self.progress_bar.setValue(i * 20)
+            QApplication.processEvents()
+
+        success = self.data_thread.save_spectrum_data_to_folder(folder=directory)
+        self.progress_bar.setVisible(False)
+
+        if not success:
+            QMessageBox.critical(self, "Error", "Failed to save spectrum data.")
 
     # function to reset graphic zoom
     def reset_graph_view(self):

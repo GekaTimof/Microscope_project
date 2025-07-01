@@ -52,17 +52,17 @@ class SpectrometerConnection:
         self.process = pexpect.spawn(f'{self.spectrometer_path}', cwd=self.working_directory, encoding="utf-8", timeout=10)
 
 
-    # function return spectrometer working_directory
+    # method return spectrometer working_directory
     def get_working_directory(self):
         return self.working_directory
 
 
-    # function return spectrometer accumulation time
+    # method return spectrometer accumulation time
     def get_integral_time(self):
         return self.integral_time
 
 
-    # function set spectrometer accumulation time
+    # method set spectrometer accumulation time
     def set_integral_time(self, new_integral_time: int):
         if new_integral_time > 0:
             self.integral_time = new_integral_time
@@ -71,14 +71,14 @@ class SpectrometerConnection:
             raise Exception(f"an able to set integral_time = {new_integral_time}")
 
 
-    # function send one command to spectrometer
+    # method send one command to spectrometer
     def send_command(self, command: str):
         self.process.sendline(command)
         #print(f"command - '{command}' has been sent")
         return self
 
 
-    # function trying to find expect_answer in spectrometer text flow
+    # method trying to find expect_answer in spectrometer text flow
     def wait_for_response(self,  expect_answer: str, waiting_time: int):
         waiting_time = max(waiting_time, MINIMUM_WAITING_TIME)
         try:
@@ -89,7 +89,7 @@ class SpectrometerConnection:
             raise Exception(f"No answer '{expect_answer}' from spectrometer")
 
 
-    # function trying to find expect_answer in spectrometer text flow and return all test before it
+    # method trying to find expect_answer in spectrometer text flow and return all test before it
     def read_until_response(self,  expect_answer: str, waiting_time: int):
         waiting_time = max(waiting_time, MINIMUM_WAITING_TIME)
         # wait for answer
@@ -100,7 +100,7 @@ class SpectrometerConnection:
         return response
 
 
-    # function to connect to spectrometer
+    # method to connect to spectrometer
     def open_spectrometer(self):
         # get command parameters
         command_id = self.Commands[self.Open_spectrometer][0]
@@ -115,7 +115,7 @@ class SpectrometerConnection:
         return self
 
 
-    # function to split text data for len lince and convert to np array
+    # method to split text data for len lince and convert to np array
     def split_spectrometer_response(self, response: str, data_len: int):
         lines = response.split('\n')
         # List to store extracted data
@@ -146,7 +146,7 @@ class SpectrometerConnection:
         self.overillumination = np.max(self.wavelength_range) >= OVERILLUMINATION_THRESHOLD
 
 
-    # function to retrieve and set wavelength range
+    # method to retrieve and set wavelength range
     def retrieve_and_set_wavelength_range(self):
         # get command parameters
         command_id = self.Commands[self.Get_wavelength_range][0]
@@ -170,7 +170,7 @@ class SpectrometerConnection:
         return self
 
 
-    # function to retrieve and set dark spectrum
+    # method to retrieve and set dark spectrum
     def retrieve_and_set_dark_spectrum(self):
         # time we wait for data (seconds)
         waiting_time = self.waiting_time / 1000
@@ -204,7 +204,7 @@ class SpectrometerConnection:
         return self
 
 
-    # function to retrieve and set current spectrum
+    # method to retrieve and set current spectrum
     def retrieve_and_set_current_spectrum(self):
         # time we wait for data (seconds)
         waiting_time = self.waiting_time / 1000
@@ -237,44 +237,44 @@ class SpectrometerConnection:
         return self
 
 
-    # function to clear dark spectrum
+    # method to clear dark spectrum
     def clear_dark_spectrum(self):
         self.dark_spectrum = np.zeros(self.spectrum_len)
         self.sub = False
         self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
 
-    # function return wavelength range
+    # method return wavelength range
     def return_wavelength_range(self):
         return self.wavelength_range
 
 
-    # function return dark spectrum
+    # method return dark spectrum
     def return_dark_spectrum(self):
         return self.dark_spectrum
 
 
-    # function return current spectrum
+    # method return current spectrum
     def return_current_spectrum(self):
         return self.current_spectrum
 
 
-    # function return real current spectrum
+    # method return real current spectrum
     def return_real_current_spectrum(self):
         return self.real_current_spectrum
 
 
-    # function return (wavelength range and real current spectrum)
+    # method return (wavelength range and real current spectrum)
     def return_wavelength_and_spectrum(self):
         return (self.wavelength_range, self.real_current_spectrum)
 
 
-    # function return sub parameter
+    # method return sub parameter
     def return_sub_parameter(self):
         return self.sub
 
 
-    # function return sub parameter
+    # method return sub parameter
     def return_sub_parameter_text(self):
         if self.sub:
             return "sub"
@@ -282,7 +282,7 @@ class SpectrometerConnection:
             return "no_sub"
 
 
-    # function return overillumination parameter
+    # method return overillumination parameter
     def return_overillumination(self):
         return self.overillumination
 

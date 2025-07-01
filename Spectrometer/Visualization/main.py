@@ -4,9 +4,9 @@ import sys
 import pwd
 import time
 import numpy as np
-from PyQt5.QtWidgets import QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
+from PyQt5.QtWidgets import QComboBox, QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
     QPushButton, QShortcut, QMessageBox, QGraphicsProxyWidget
-from PyQt5.QtCore import QThread, pyqtSignal, QMutex
+from PyQt5.QtCore import QProcess, QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QIcon, QKeySequence, QFont
 
@@ -47,28 +47,28 @@ class DataThread(QThread):
             self.connection.retrieve_and_set_wavelength_range()
 
 
-    # function to set new dark spectrum
+    # method to set new dark spectrum
     def set_dark_spectrum(self):
         self.mutex.lock()
         self.connection.retrieve_and_set_dark_spectrum()
         self.mutex.unlock()
 
 
-    # function to clear dark spectrum
+    # method to clear dark spectrum
     def clear_dark_spectrum(self):
         self.mutex.lock()
         self.connection.clear_dark_spectrum()
         self.mutex.unlock()
 
 
-    # function to set new dark spectrum
+    # method to set new dark spectrum
     def set_integral_time(self, new_integral_time: int):
         self.mutex.lock()
         self.connection.set_integral_time(new_integral_time)
         self.mutex.unlock()
 
 
-    # function to save spectrum data (X  Y) to chosen folder
+    # method to save spectrum data (X  Y) to chosen folder
     def save_spectrum_data_to_folder(self, folder):
         self.mutex.lock()
         try:
@@ -94,7 +94,7 @@ class DataThread(QThread):
             return False
 
 
-    # function to update data in thread
+    # method to update data in thread
     def run(self):
         # get test y data (in testing mode)
         if self.testing:
@@ -125,7 +125,7 @@ class DataThread(QThread):
             self.msleep(1)
 
 
-    # function to stop thread
+    # method to stop thread
     def stop(self):
         self.running = False
         self.quit()
@@ -143,6 +143,7 @@ class GraphApp(QWidget):
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
 
+    # method to set application UI
     def init_ui(self):
         # Application base language
         if BASE_LANGUAGE in app_text.APPLICATION_LANGUAGES:
@@ -223,6 +224,13 @@ class GraphApp(QWidget):
         shortcut_save_spectrum_data = QShortcut(QKeySequence("Ctrl+S"), self)
         shortcut_save_spectrum_data.activated.connect(self.save_spectrum_data)
 
+        # Progress bar for data sawing
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setMinimum(0)
+        self.progress_bar.setMaximum(100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(False)
+
         # Button to reset graph zoom
         self.reset_zoom_button = QPushButton(app_text.RESET_ZOOM_BUTTON[self.language])
         self.reset_zoom_button.clicked.connect(self.reset_graph_view)
@@ -238,12 +246,15 @@ class GraphApp(QWidget):
         if DARK_THEME:
             self.theme_button.toggle()
 
-        # Progress bar for data sawing
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setMinimum(0)
-        self.progress_bar.setMaximum(100)
-        self.progress_bar.setValue(0)
-        self.progress_bar.setVisible(False)
+        # Language selector
+        self.language_label = QLabel(app_text.LANGUAGE_SELECTOR[self.language])
+        self.language_combo = QComboBox()
+        self.language_combo.addItems(app_text.APPLICATION_LANGUAGES)
+        self.language_combo.setCurrentText(self.language)
+        self.language_combo.currentTextChanged.connect(self.change_language)
+        language_layout = QHBoxLayout()
+        language_layout.addWidget(self.language_label, 3)
+        language_layout.addWidget(self.language_combo, 2)
 
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
@@ -257,6 +268,7 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.progress_bar)
         control_layout.addWidget(self.reset_zoom_button)
         control_layout.addWidget(self.theme_button)
+        control_layout.addLayout(language_layout)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget,4)
@@ -264,7 +276,7 @@ class GraphApp(QWidget):
         self.setLayout(layout)
 
 
-    # function to directory selector
+    # method to directory selector
     def select_directory(self):
         # get home directory of user in whose directory the program is located
         script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -289,12 +301,12 @@ class GraphApp(QWidget):
             self.dir_input.setText(directory)
 
 
-    # function to update integral time
+    # method to update integral time
     def update_integral_time(self, value):
         self.data_thread.set_integral_time(value)
 
 
-    # function to set X and Y to graph
+    # method to set X and Y to graph
     def update_graph(self, x_data, y_data):
         self.curve.setData(x_data, y_data)
 
@@ -310,13 +322,13 @@ class GraphApp(QWidget):
             self.overillumination_label.hide()
 
 
-    # function to stap thread (spectrometer connection)
+    # method to stap thread (spectrometer connection)
     def close_event(self, event):
         self.data_thread.stop()
         event.accept()
 
 
-    # function to save file with data to selected folder
+    # method to save file with data to selected folder
     def save_spectrum_data(self):
         try:
             directory = self.dir_input.text()
@@ -351,7 +363,7 @@ class GraphApp(QWidget):
         if not success:
             QMessageBox.critical(self, "Error", app_text.CRITICAL_SAVING_FAILED[self.language])
 
-    # function to reset graphic zoom
+    # method to reset graphic zoom
     def reset_graph_view(self):
         if self.curve is not None:
             data = self.curve.getData()
@@ -364,7 +376,7 @@ class GraphApp(QWidget):
                 self.graph_widget.setYRange(min_y, max_y)
 
 
-    # function to get mouse coordinates when it on the graph
+    # method to get mouse coordinates when it on the graph
     def on_mouse_move(self, pos):
         vb = self.graph_widget.getViewBox()
         if vb.sceneBoundingRect().contains(pos):
@@ -388,7 +400,7 @@ class GraphApp(QWidget):
             self.coord_label.hide()
 
 
-    # function to switch theme (Light and Dark)
+    # method to switch theme (Light and Dark)
     def toggle_theme(self, checked):
         if checked:
             self.set_dark_theme()
@@ -398,6 +410,7 @@ class GraphApp(QWidget):
             self.theme_button.setText(app_text.SWITCH_TO_DARK_THEME_BUTTON[self.language])
 
 
+    # method to set dark application theme
     def set_dark_theme(self):
         dark_style = DARK_THEME_STYLE
         self.coord_label.setColor("w")
@@ -406,11 +419,40 @@ class GraphApp(QWidget):
         self.curve.setPen('y')
 
 
+    # method to set light application theme
     def set_light_theme(self):
         self.coord_label.setColor("black")
         self.setStyleSheet("")
         self.graph_widget.setBackground('w')
         self.curve.setPen('b')
+
+
+    # method to change application language
+    def change_language(self, selected_language):
+        if selected_language != self.language:
+            self.update_base_language_constant(selected_language)
+            self.restart_application()
+
+
+    # method to change base language constant (BASE_LANGUAGE)
+    def update_base_language_constant(self, new_language):
+        constants_path = os.path.join(os.path.dirname(__file__), "SpectrometerApplication" ,"Constants.py")
+        with open(constants_path, "r") as file:
+            lines = file.readlines()
+
+        with open(constants_path, "w") as file:
+            for line in lines:
+                if line.startswith("BASE_LANGUAGE"):
+                    file.write(f'BASE_LANGUAGE = "{new_language}"\n')
+                else:
+                    file.write(line)
+
+
+    # method to restart all application
+    def restart_application(self):
+        QApplication.quit()
+        QProcess.startDetached(sys.executable, sys.argv)
+
 
 
 #-------------------------------------------------- Application start --------------------------------------------------

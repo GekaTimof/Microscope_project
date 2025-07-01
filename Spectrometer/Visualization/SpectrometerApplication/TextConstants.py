@@ -60,3 +60,6 @@ RESET_ZOOM_BUTTON = {'en': "Reset Zoom", 'ru': "Сбросить масштаб"
 
 # overillumination warning massage text
 OVERILLUMINATION_WARNING_TEXT = {'en': "Overillumination!", 'ru': "Пересвет!"}
+
+# language selector label text
+LANGUAGE_SELECTOR = {'en': "Language:", 'ru': "Язык:"}

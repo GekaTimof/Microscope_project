@@ -5,7 +5,7 @@ import pwd
 import numpy as np
 
 
-# generate array with X and Y (for saving text data)
+# function to generate array with X and Y (for saving text data)
 def generate_spectrum_data_array(X: np.array, Y: np.array):
     if X.size == Y.size:
         text_array = []
@@ -16,13 +16,13 @@ def generate_spectrum_data_array(X: np.array, Y: np.array):
         return None
 
 
-# generate name for file with data from spectrometer
+# function to generate name for file with data from spectrometer
 def generate_spectrum_file_name(prefix: str = ""):
     name = prefix + str(datetime.datetime.now())
     return name
 
 
-# save file with data to selected folder (if folder exist)
+# function to save file with data to selected folder (if folder exist)
 def save_data_to_folder(data, file_name: str, folder):
     if os.path.isdir(folder):
         path_to_file = os.path.join(folder, file_name)

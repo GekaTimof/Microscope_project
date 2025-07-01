@@ -287,6 +287,15 @@ class SpectrometerConnection:
         return self.overillumination
 
 
+    # method return text information about session and spectrometer
+    def return_session_info(self):
+        info = "\n".join([
+        self.return_sub_parameter_text(),
+        ">>>>> Begin Spectral Data <<<<<"
+        ])
+        return info
+
+
 if __name__ == "__main__":
     connection = SpectrometerConnection()
     connection.open_spectrometer()

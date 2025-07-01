@@ -76,6 +76,8 @@ class DataThread(QThread):
             x_data = self.connection.return_wavelength_range()
             # get real real_current_spectrum (current_spectrum - dark_spectrum)
             y_data = self.connection.return_real_current_spectrum()
+            # get information about session and spectrometer
+
             # generate array of text lines
             data = generate_spectrum_data_array(X=x_data, Y=y_data)
             # generate name for file for data

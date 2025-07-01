@@ -287,12 +287,11 @@ class SpectrometerConnection:
         return self.overillumination
 
 
-    # method return text information about session and spectrometer
+    # method return array with information about session and spectrometer
     def return_session_info(self):
-        info = "\n".join([
-        self.return_sub_parameter_text(),
-        ">>>>> Begin Spectral Data <<<<<"
-        ])
+        info = []
+        info.append(self.return_sub_parameter_text())
+        info.append(">>>>> Begin Spectral Data <<<<<")
         return info
 
 

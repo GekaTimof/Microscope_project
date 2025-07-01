@@ -1,6 +1,5 @@
 import os
 import datetime
-import getpass
 import pwd
 import numpy as np
 

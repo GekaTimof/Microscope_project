@@ -2,9 +2,6 @@ import os
 
 #------------------------------------------------------ User Zone ------------------------------------------------------
 
-# Path to base save directory (directory to save spectrum datas)
-# TODO clear this field before release
-BASE_SAVE_SPECTRUM_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrometer/save_data_folder"
 
 #---------------------------------------------------- NOT User Zone ----------------------------------------------------
 

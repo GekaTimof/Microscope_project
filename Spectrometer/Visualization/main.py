@@ -4,24 +4,22 @@ import sys
 import pwd
 import time
 import numpy as np
-from PyQt5.QtWidgets import QComboBox, QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
+from PyQt5.QtWidgets import QListWidget, QComboBox, QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
     QPushButton, QShortcut, QMessageBox, QGraphicsProxyWidget
-from PyQt5.QtCore import QProcess, QThread, pyqtSignal, QMutex
+from PyQt5.QtCore import Qt, QProcess, QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
-from PyQt5.QtGui import QIcon, QKeySequence, QFont
+from PyQt5.QtGui import QPen, QIcon, QKeySequence, QFont
 
 # Spectrometer connection class
 from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
+from SpectrometerApplication.Constants import BASE_UPLOAD_SPECTRUM_DIR, BASE_SAVE_SPECTRUM_DIR, BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
 # Functions to save spectrum data
-from SpectrometerApplication.SaveData import generate_spectrum_data_array, generate_spectrum_file_name, save_data_to_folder
+from SpectrometerApplication.WorkWithSpectrumFiles import read_spectrum_from_file, create_full_spectrum_data, generate_spectrum_file_name, save_data_to_folder
 # Application text
 from SpectrometerApplication import TextConstants as app_text
-# Base directory to save spectrum datas
-from SpectrometerOptoskyConnection.Constants import BASE_SAVE_SPECTRUM_DIR
 # (only for testing mode) Links for test data and visual_testing function
 from SpectrometerOptoskyConnection.GetTestData import get_data_from_file
 from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
@@ -80,17 +78,15 @@ class DataThread(QThread):
             session_info = self.connection.return_session_info()
 
             # generate array of text lines
-            data = session_info + generate_spectrum_data_array(X=x_data, Y=y_data)
+            data = create_full_spectrum_data(session_info, X=x_data, Y=y_data)
             # generate name for file for data
             file_name = generate_spectrum_file_name(prefix=self.connection.return_sub_parameter_text())
 
             # save data like file to folder (if we have data)
             if data is not None:
                 save_data_to_folder(data, file_name, folder)
-            # else:
-            #     print("Not enough data (X Y) to save it")
-            self.mutex.unlock()
 
+            self.mutex.unlock()
             return True
         except:
             self.mutex.unlock()
@@ -260,9 +256,17 @@ class GraphApp(QWidget):
         language_layout.addWidget(self.language_label, 3)
         language_layout.addWidget(self.language_combo, 2)
 
-        # Field for load spectra
-        self.loaded_spectrum_button = QPushButton(app_text.SPECTRUM_LOAD_BUTTON[self.language])
+        # Button to load spectra
+        self.load_spectrum_button = QPushButton(app_text.SPECTRUM_LOAD_BUTTON[self.language])
         self.load_spectrum_button.clicked.connect(self.load_spectrum_file)
+
+        # Button to remove spectrum
+        self.remove_spectrum_button = QPushButton(app_text.SPECTRUM_REMOVE_BUTTON[self.language])
+        self.remove_spectrum_button.clicked.connect(self.remove_selected_spectrum)
+
+        # List to select spectrum to remove
+        self.spectrum_list = QListWidget()
+        self.spectrum_list.setSelectionMode(QListWidget.SingleSelection)
 
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
@@ -278,6 +282,8 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.save_button)
         control_layout.addWidget(self.progress_bar)
         control_layout.addWidget(self.load_spectrum_button)
+        control_layout.addWidget(self.remove_spectrum_button)
+        control_layout.addWidget(self.spectrum_list)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget,4)
@@ -465,13 +471,35 @@ class GraphApp(QWidget):
 
     # method to load saved spectrum to diagram
     def load_spectrum_file(self):
-        files, _ = QFileDialog.getOpenFileNames(self, "Select spectrum files", "", "Text Files (*.txt *.csv)")
-        for file_path in files:
-            if file_path not in self.loaded_spectra:
-                x_data, y_data = self.read_spectrum_from_file(file_path)
-                color = pg.intColor(len(self.loaded_spectra))  # уникальный цвет
-                curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
-                self.loaded_spectra[file_path] = curve
+        dialog = QFileDialog(self)
+        dialog.setWindowTitle(app_text.SELECT_SPECTRUM_FILE_WINDOW_NAME[self.language])
+        dialog.setDirectory(BASE_UPLOAD_SPECTRUM_DIR if os.path.isdir(BASE_UPLOAD_SPECTRUM_DIR) else "")
+        dialog.setNameFilter("Text Files (*.txt *.csv)")
+        dialog.setFileMode(QFileDialog.ExistingFiles)
+        dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+
+        if dialog.exec_():
+            files = dialog.selectedFiles()
+            for file_path in files:
+                if file_path not in self.loaded_spectra:
+                    x_data, y_data = read_spectrum_from_file(file_path)
+                    color = pg.intColor(len(self.loaded_spectra))
+                    curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
+                    self.loaded_spectra[file_path] = curve
+                    self.spectrum_list.addItem(os.path.basename(file_path))
+
+
+    # method to remove spectrum from diagram
+    def remove_selected_spectrum(self):
+        selected_items = self.spectrum_list.selectedItems()
+        if selected_items:
+            item = selected_items[0]
+            filename = item.text()
+            full_path = [key for key in self.loaded_spectra if os.path.basename(key) == filename]
+            if full_path:
+                curve = self.loaded_spectra.pop(full_path[0])
+                self.graph_widget.removeItem(curve)
+                self.spectrum_list.takeItem(self.spectrum_list.row(item))
 
 
 #-------------------------------------------------- Application start --------------------------------------------------

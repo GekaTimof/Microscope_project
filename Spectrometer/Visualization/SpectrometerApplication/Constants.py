@@ -2,6 +2,12 @@ import os
 
 #------------------------------------------------------ User Zone ------------------------------------------------------
 
+# Path to base save directory (directory to save spectrum datas)
+BASE_SAVE_SPECTRUM_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrometer/save_data_folder"
+
+# Path to base spectrum upload directory (directory to get file with spectrum data)
+BASE_UPLOAD_SPECTRUM_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrometer/save_data_folder"
+
 # Set Dark theme like base (True/False)
 DARK_THEME = False
 

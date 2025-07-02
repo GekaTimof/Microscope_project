@@ -3,6 +3,9 @@ import datetime
 import pwd
 import numpy as np
 
+# text that separate session info and spectrum data
+SPECTRUM_DATA_SEPARATOR = ">>>>> Begin Spectral Data <<<<<"
+
 
 # function to generate array with X and Y (for saving text data)
 def generate_spectrum_data_array(X: np.array, Y: np.array):
@@ -19,6 +22,12 @@ def generate_spectrum_data_array(X: np.array, Y: np.array):
 def generate_spectrum_file_name(prefix: str = ""):
     name = prefix + str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')) + ".txt"
     return name
+
+
+# function to crate full data about spectrum (session info + separator + spectrum data)
+def create_full_spectrum_data(session_info, x_data, y_data):
+    data_array = generate_spectrum_data_array(X=x_data, Y=y_data)
+    return session_info + SPECTRUM_DATA_SEPARATOR + data_array if data_array is not None else None
 
 
 # function to save file with data to selected folder (if folder exist)
@@ -50,3 +59,26 @@ def save_data_to_folder(data, file_name: str, folder):
     else:
         raise Exception(f"{folder} is not a directory")
 
+
+# function to get spectrum array (X,Y) from file
+def read_spectrum_from_file(file_path):
+    x_data = []
+    y_data = []
+    start_reading = False
+
+    with open(file_path, 'r') as f:
+        for line in f:
+            if not start_reading:
+                if SPECTRUM_DATA_SEPARATOR in line.strip():
+                    start_reading = True
+            else:
+                parts = line.strip().split()
+                print(parts)
+                if len(parts) >= 2:
+                    try:
+                        x, y = float(parts[0]), float(parts[1])
+                        x_data.append(x)
+                        y_data.append(y)
+                    except ValueError:
+                        continue
+    return x_data, y_data

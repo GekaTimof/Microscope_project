@@ -244,6 +244,11 @@ class SpectrometerConnection:
         self.real_current_spectrum = self.current_spectrum - self.dark_spectrum
 
 
+    # method return current integral time
+    def return_integral_time(self):
+        return self.integral_time
+
+
     # method return wavelength range
     def return_wavelength_range(self):
         return self.wavelength_range
@@ -291,7 +296,8 @@ class SpectrometerConnection:
     def return_session_info(self):
         info = []
         info.append(self.return_sub_parameter_text())
-        info.append(">>>>> Begin Spectral Data <<<<<")
+        info.append(f"integral_time: {self.return_integral_time()}")
+        # ...
         return info
 
 

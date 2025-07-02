@@ -66,3 +66,10 @@ LANGUAGE_SELECTOR = {'en': "Language:", 'ru': "Язык:"}
 
 # spectrum load button text
 SPECTRUM_LOAD_BUTTON = {'en': "Select spectrum files", 'ru': "Выберите файл спектра"}
+
+# name of window to get file with spectrum
+SELECT_SPECTRUM_FILE_WINDOW_NAME = {'en': "Select spectrum files", 'ru': "Выберите файл спектра"}
+
+# spectrum remove button text
+SPECTRUM_REMOVE_BUTTON = {'en': "Remove selected spectrum", 'ru': "Удалить выбранный спектр"}
+

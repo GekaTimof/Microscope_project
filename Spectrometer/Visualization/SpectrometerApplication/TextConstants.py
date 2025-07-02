@@ -63,3 +63,6 @@ OVERILLUMINATION_WARNING_TEXT = {'en': "Overillumination!", 'ru': "Пересв�
 
 # language selector label text
 LANGUAGE_SELECTOR = {'en': "Language:", 'ru': "Язык:"}
+
+# spectrum load button text
+SPECTRUM_LOAD_BUTTON = {'en': "Select spectrum files", 'ru': "Выберите файл спектра"}

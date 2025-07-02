@@ -143,6 +143,7 @@ class GraphApp(QWidget):
         super().__init__()
         self.data_thread = DataThread(testing=testing)
         self.init_ui()
+        self.loaded_spectra = {}
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
 
@@ -259,6 +260,10 @@ class GraphApp(QWidget):
         language_layout.addWidget(self.language_label, 3)
         language_layout.addWidget(self.language_combo, 2)
 
+        # Field for load spectra
+        self.loaded_spectrum_button = QPushButton(app_text.SPECTRUM_LOAD_BUTTON[self.language])
+        self.load_spectrum_button.clicked.connect(self.load_spectrum_file)
+
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
         control_layout.addLayout(language_layout)
@@ -272,6 +277,7 @@ class GraphApp(QWidget):
         control_layout.addLayout(dir_layout)
         control_layout.addWidget(self.save_button)
         control_layout.addWidget(self.progress_bar)
+        control_layout.addWidget(self.load_spectrum_button)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget,4)
@@ -456,6 +462,16 @@ class GraphApp(QWidget):
         QApplication.quit()
         QProcess.startDetached(sys.executable, sys.argv)
 
+
+    # method to load saved spectrum to diagram
+    def load_spectrum_file(self):
+        files, _ = QFileDialog.getOpenFileNames(self, "Select spectrum files", "", "Text Files (*.txt *.csv)")
+        for file_path in files:
+            if file_path not in self.loaded_spectra:
+                x_data, y_data = self.read_spectrum_from_file(file_path)
+                color = pg.intColor(len(self.loaded_spectra))  # уникальный цвет
+                curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
+                self.loaded_spectra[file_path] = curve
 
 
 #-------------------------------------------------- Application start --------------------------------------------------

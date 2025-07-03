@@ -73,3 +73,9 @@ SELECT_SPECTRUM_FILE_WINDOW_NAME = {'en': "Select spectrum files", 'ru': "Выб
 # spectrum remove button text
 SPECTRUM_REMOVE_BUTTON = {'en': "Remove selected spectrum", 'ru': "Удалить выбранный спектр"}
 
+# warning title (for all warning windows)
+WARNING_TITLE = {'en': "Warning", 'ru': "Предупреждение"}
+
+# warn user that application will be quit, and new settings take effect after restart
+WARNING_LANGUAGE_CHANGE_REQUIRES_RESTART = {'en': "After changing language application will be closed. Changes take effect after restart.",
+                                'ru': "При смене языка приложение будет закрыто. Изменения вступят в силу после перезапуска."}

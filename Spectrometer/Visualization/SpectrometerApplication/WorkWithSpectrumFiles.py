@@ -8,11 +8,11 @@ SPECTRUM_DATA_SEPARATOR = ">>>>> Begin Spectral Data <<<<<"
 
 
 # function to generate array with X and Y (for saving text data)
-def generate_spectrum_data_array(X: np.array, Y: np.array):
-    if X.size == Y.size:
+def generate_spectrum_data_array(x_data: np.array, y_data: np.array):
+    if x_data.size == y_data.size:
         text_array = []
-        for i, elem in enumerate(X):
-            text_array.append(f"{X[i]}  {Y[i]}\n")
+        for i, elem in enumerate(x_data):
+            text_array.append(f"{x_data[i]}  {y_data[i]}\n")
         return text_array
     else:
         return None
@@ -26,8 +26,8 @@ def generate_spectrum_file_name(prefix: str = ""):
 
 # function to crate full data about spectrum (session info + separator + spectrum data)
 def create_full_spectrum_data(session_info, x_data, y_data):
-    data_array = generate_spectrum_data_array(X=x_data, Y=y_data)
-    return session_info + SPECTRUM_DATA_SEPARATOR + data_array if data_array is not None else None
+    data_array = generate_spectrum_data_array(x_data, y_data)
+    return session_info + [SPECTRUM_DATA_SEPARATOR] + data_array if data_array is not None else None
 
 
 # function to save file with data to selected folder (if folder exist)
@@ -73,7 +73,6 @@ def read_spectrum_from_file(file_path):
                     start_reading = True
             else:
                 parts = line.strip().split()
-                print(parts)
                 if len(parts) >= 2:
                     try:
                         x, y = float(parts[0]), float(parts[1])

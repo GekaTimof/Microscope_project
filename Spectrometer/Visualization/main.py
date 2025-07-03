@@ -74,12 +74,14 @@ class DataThread(QThread):
             x_data = self.connection.return_wavelength_range()
             # get real real_current_spectrum (current_spectrum - dark_spectrum)
             y_data = self.connection.return_real_current_spectrum()
+
             # get information about session and spectrometer
             session_info = self.connection.return_session_info()
 
             # generate array of text lines
-            data = create_full_spectrum_data(session_info, X=x_data, Y=y_data)
-            # generate name for file for data
+            data = create_full_spectrum_data(session_info=session_info, x_data=x_data, y_data=y_data)
+
+            # generate name for data file
             file_name = generate_spectrum_file_name(prefix=self.connection.return_sub_parameter_text())
 
             # save data like file to folder (if we have data)
@@ -369,7 +371,7 @@ class GraphApp(QWidget):
 
         for i in range(1, 6):
             time.sleep(0.1)
-            self.progress_bar.setValue(i * 20)
+            self.progress_bar.setValue(i * 20 - 1)
             QApplication.processEvents()
 
         success = self.data_thread.save_spectrum_data_to_folder(folder=directory)
@@ -399,8 +401,8 @@ class GraphApp(QWidget):
             x, y = mouse_point.x(), mouse_point.y()
 
             view_rect = vb.viewRect()
-            margin_x = (view_rect.right() - view_rect.left()) * 0.03
-            margin_y = (view_rect.bottom() - view_rect.top()) * 0.04
+            margin_x = (view_rect.right() - view_rect.left()) * 0.04
+            margin_y = (view_rect.bottom() - view_rect.top()) * 0.05
 
             if (view_rect.left() + margin_x <= x <= view_rect.right() - margin_x and
                 view_rect.top() + margin_y <= y <= view_rect.bottom() - margin_y):
@@ -445,8 +447,19 @@ class GraphApp(QWidget):
     # method to change application language
     def change_language(self, selected_language):
         if selected_language != self.language:
-            self.update_base_language_constant(selected_language)
-            self.restart_application()
+            reply = QMessageBox.warning(
+                self,
+                app_text.WARNING_TITLE[self.language],
+                app_text.WARNING_LANGUAGE_CHANGE_REQUIRES_RESTART[self.language],
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+
+            if reply == QMessageBox.Yes:
+                self.update_base_language_constant(selected_language)
+                QApplication.quit()
+            else:
+                self.language_combo.setCurrentText(self.language)
 
 
     # method to change base language constant (BASE_LANGUAGE)
@@ -486,7 +499,11 @@ class GraphApp(QWidget):
                     color = pg.intColor(len(self.loaded_spectra))
                     curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
                     self.loaded_spectra[file_path] = curve
-                    self.spectrum_list.addItem(os.path.basename(file_path))
+                    # get name for spectrum (folder name + file name)
+                    folder_name = os.path.basename(os.path.dirname(file_path))
+                    file_name = os.path.basename(file_path)
+                    spectrum_name = f"{folder_name}/{file_name}"
+                    self.spectrum_list.addItem(spectrum_name)
 
 
     # method to remove spectrum from diagram
@@ -509,6 +526,6 @@ if __name__ == "__main__":
     # set font settings
     app.setFont(QFont(FONT, FONT_SIZE))
     # start in normal mode
-    window = GraphApp(testing=True)
+    window = GraphApp(testing=False)
     window.show()
     sys.exit(app.exec_())

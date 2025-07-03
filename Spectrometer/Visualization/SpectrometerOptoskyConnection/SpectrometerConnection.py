@@ -155,7 +155,8 @@ class SpectrometerConnection:
 
 
     def check_overillumination(self):
-        self.overillumination = np.max(self.wavelength_range) >= OVERILLUMINATION_THRESHOLD
+        self.overillumination = np.max(self.current_spectrum) >= OVERILLUMINATION_THRESHOLD
+        print(np.max(self.wavelength_range))
 
 
     # method to retrieve and set wavelength range

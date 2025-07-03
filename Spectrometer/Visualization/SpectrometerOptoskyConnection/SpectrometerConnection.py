@@ -3,7 +3,7 @@ import pexpect
 import numpy as np
 
 from SpectrometerOptoskyConnection.Constants import OVERILLUMINATION_THRESHOLD, MINIMUM_WAITING_TIME, WAITING_TIME_MULTIPLIER, SPECTROMETER_DIR, SPECTROMETER_FILE, START_INTEGRAL_TIME, WAVELENGTH_RANGE_LEN, SPECTRUM_LEN
-from SpectrometerOptoskyConnection.Constants import OptoskySpectrometerCommands, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
+from SpectrometerOptoskyConnection.Constants import OptoskySpectrometerCommands, Command_get_modul_production_date, Command_get_modul_version, Command_get_SN, Command_get_PN, Command_get_vendor, Command_open_spectrometer, Command_get_wavelength_range, Command_get_dark_spectrum, Command_get_current_spectrum
 
 # class that contain spectrometer connection
 class SpectrometerConnection:
@@ -17,6 +17,11 @@ class SpectrometerConnection:
         self.Get_wavelength_range = Command_get_wavelength_range
         self.Get_dark_spectrum = Command_get_dark_spectrum
         self.Get_current_spectrum = Command_get_current_spectrum
+        self.Get_vendor = Command_get_vendor
+        self.Get_PN = Command_get_PN
+        self.Get_SN = Command_get_SN
+        self.Get_modul_version = Command_get_modul_version
+        self.Get_modul_production_date = Command_get_modul_production_date
 
         # set start accumulation time
         self.integral_time: int = START_INTEGRAL_TIME
@@ -37,6 +42,13 @@ class SpectrometerConnection:
         self.sub = False
         # set over-illumination parameter
         self.overillumination = False
+
+        # info about spectrometer
+        self.vendor = ''
+        self.PN = ''
+        self.SN = ''
+        self.module_version = ''
+        self.module_production_date = ''
 
         # set working directory
         self.working_directory = SPECTROMETER_DIR
@@ -237,6 +249,125 @@ class SpectrometerConnection:
         return self
 
 
+    # method to retrieve and set vendor
+    def retrieve_and_set_vendor(self):
+        # time we wait for data (seconds)
+        waiting_time = self.waiting_time / 1000
+
+        # get command parameters
+        command_id = self.Commands[self.Get_vendor][0]
+        expected_answers = self.Commands[self.Get_vendor][1]
+
+        # send command
+        self.send_command(command_id)
+        # wait for response
+        self.wait_for_response(expected_answers[0], waiting_time)
+        # get data from response
+        response = self.read_until_response(expected_answers[1], waiting_time)
+        # set vendor
+        self.vendor = response.strip()
+        # skip before next request
+        self.wait_for_response(expected_answers[2], waiting_time)
+        return self
+
+
+    # method to retrieve and set PN
+    def retrieve_and_set_PN(self):
+        # time we wait for data (seconds)
+        waiting_time = self.waiting_time / 1000
+
+        # get command parameters
+        command_id = self.Commands[self.Get_PN][0]
+        expected_answers = self.Commands[self.Get_PN][1]
+
+        # send command
+        self.send_command(command_id)
+        # wait for response
+        self.wait_for_response(expected_answers[0], waiting_time)
+        # get data from response
+        response = self.read_until_response(expected_answers[1], waiting_time)
+        # set vendor
+        self.PN = response.strip()
+        # skip before next request
+        self.wait_for_response(expected_answers[2], waiting_time)
+        return self
+
+
+    # method to retrieve and set SN
+    def retrieve_and_set_SN(self):
+        # time we wait for data (seconds)
+        waiting_time = self.waiting_time / 1000
+
+        # get command parameters
+        command_id = self.Commands[self.Get_SN][0]
+        expected_answers = self.Commands[self.Get_SN][1]
+
+        # send command
+        self.send_command(command_id)
+        # wait for response
+        self.wait_for_response(expected_answers[0], waiting_time)
+        # get data from response
+        response = self.read_until_response(expected_answers[1], waiting_time)
+        # set vendor
+        self.SN = response.strip()
+        # skip before next request
+        self.wait_for_response(expected_answers[2], waiting_time)
+        return self
+
+
+    # method to retrieve and set module version
+    def retrieve_and_set_module_version(self):
+        # time we wait for data (seconds)
+        waiting_time = self.waiting_time / 1000
+
+        # get command parameters
+        command_id = self.Commands[self.Get_modul_version][0]
+        expected_answers = self.Commands[self.Get_modul_version][1]
+
+        # send command
+        self.send_command(command_id)
+        # wait for response
+        self.wait_for_response(expected_answers[0], waiting_time)
+        # get data from response
+        response = self.read_until_response(expected_answers[1], waiting_time)
+        # set vendor
+        self.module_version = response.strip()
+        # skip before next request
+        self.wait_for_response(expected_answers[2], waiting_time)
+        return self
+
+
+    # method to retrieve and set module production date
+    def retrieve_and_set_module_production_date(self):
+        # time we wait for data (seconds)
+        waiting_time = self.waiting_time / 1000
+
+        # get command parameters
+        command_id = self.Commands[self.Get_modul_production_date][0]
+        expected_answers = self.Commands[self.Get_modul_production_date][1]
+
+        # send command
+        self.send_command(command_id)
+        # wait for response
+        self.wait_for_response(expected_answers[0], waiting_time)
+        # get data from response
+        response = self.read_until_response(expected_answers[1], waiting_time)
+        # set vendor
+        self.module_production_date = response.strip()
+        # skip before next request
+        self.wait_for_response(expected_answers[2], waiting_time)
+        return self
+
+
+    # method to set all info about session
+    def set_session_info(self):
+        self.retrieve_and_set_vendor()
+        self.retrieve_and_set_PN()
+        self.retrieve_and_set_SN()
+        self.retrieve_and_set_module_version()
+        self.retrieve_and_set_module_production_date()
+
+
     # method to clear dark spectrum
     def clear_dark_spectrum(self):
         self.dark_spectrum = np.zeros(self.spectrum_len)
@@ -279,6 +410,31 @@ class SpectrometerConnection:
         return self.sub
 
 
+    # method return spectrometer vendor
+    def return_vendor(self):
+        return self.vendor
+
+
+    # method return spectrometer PN
+    def return_pn(self):
+        return self.PN
+
+
+    # method return spectrometer SN
+    def return_sn(self):
+        return self.SN
+
+
+    # method return spectrometer module version
+    def return_module_version(self):
+        return self.module_version
+
+
+    # method return spectrometer module production date
+    def return_module_production_date(self):
+        return self.module_production_date
+
+
     # method return sub parameter
     def return_sub_parameter_text(self):
         if self.sub:
@@ -294,10 +450,15 @@ class SpectrometerConnection:
 
     # method return array with information about session and spectrometer
     def return_session_info(self):
+        self.set_session_info()
         info = []
         info.append(self.return_sub_parameter_text())
         info.append(f"integral_time: {self.return_integral_time()}")
-        # ...
+        info.append(f"{self.return_vendor()}")
+        info.append(f"{self.return_pn()}")
+        info.append(f"{self.return_sn()}")
+        info.append(f"{self.return_module_version()}")
+        info.append(f"{self.return_module_production_date()}")
         return info
 
 

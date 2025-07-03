@@ -12,7 +12,7 @@ def generate_spectrum_data_array(x_data: np.array, y_data: np.array):
     if x_data.size == y_data.size:
         text_array = []
         for i, elem in enumerate(x_data):
-            text_array.append(f"{x_data[i]}  {y_data[i]}\n")
+            text_array.append(f"{x_data[i]}  {y_data[i]}")
         return text_array
     else:
         return None
@@ -53,7 +53,7 @@ def save_data_to_folder(data, file_name: str, folder):
 
             # save data
             with open(path_to_file, "w") as file:
-                file.writelines(i for i in data)
+                file.writelines(f"{i}\n" for i in data)
         except KeyError:
             print(f"⚠ Error: The user could not be found {user_name}")
     else:

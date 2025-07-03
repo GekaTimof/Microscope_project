@@ -86,7 +86,6 @@ class SpectrometerConnection:
     # method send one command to spectrometer
     def send_command(self, command: str):
         self.process.sendline(command)
-        #print(f"command - '{command}' has been sent")
         return self
 
 
@@ -96,7 +95,6 @@ class SpectrometerConnection:
         try:
             # wait for answer
             self.process.expect(expect_answer, timeout=waiting_time)
-            #print(f"answer - '{expect_answer}' was received")
         except:
             raise Exception(f"No answer '{expect_answer}' from spectrometer")
 
@@ -156,7 +154,6 @@ class SpectrometerConnection:
 
     def check_overillumination(self):
         self.overillumination = np.max(self.current_spectrum) >= OVERILLUMINATION_THRESHOLD
-        print(np.max(self.wavelength_range))
 
 
     # method to retrieve and set wavelength range

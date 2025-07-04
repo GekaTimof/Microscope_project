@@ -4,7 +4,7 @@ import sys
 import pwd
 import time
 import numpy as np
-from PyQt5.QtWidgets import QListWidget, QComboBox, QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
+from PyQt5.QtWidgets import QListWidgetItem, QListWidget, QComboBox, QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
     QPushButton, QShortcut, QMessageBox, QGraphicsProxyWidget
 from PyQt5.QtCore import Qt, QProcess, QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
@@ -503,7 +503,12 @@ class GraphApp(QWidget):
                     folder_name = os.path.basename(os.path.dirname(file_path))
                     file_name = os.path.basename(file_path)
                     spectrum_name = f"{folder_name}/{file_name}"
-                    self.spectrum_list.addItem(spectrum_name)
+
+                    # create QListWidgetItem and attach full path
+                    item = QListWidgetItem(spectrum_name)
+                    item.setData(Qt.UserRole, file_path)
+
+                    self.spectrum_list.addItem(item)
 
 
     # method to remove spectrum from diagram
@@ -511,12 +516,22 @@ class GraphApp(QWidget):
         selected_items = self.spectrum_list.selectedItems()
         if selected_items:
             item = selected_items[0]
-            filename = item.text()
-            full_path = [key for key in self.loaded_spectra if os.path.basename(key) == filename]
-            if full_path:
-                curve = self.loaded_spectra.pop(full_path[0])
+
+            # retrieve the full path stored in item
+            file_path = item.data(Qt.UserRole)
+
+            if file_path in self.loaded_spectra:
+                curve = self.loaded_spectra.pop(file_path)
                 self.graph_widget.removeItem(curve)
                 self.spectrum_list.takeItem(self.spectrum_list.row(item))
+
+
+            # filename = item.text()
+            # full_path = [key for key in self.loaded_spectra if os.path.basename(key) == filename]
+            # if full_path:
+            #     curve = self.loaded_spectra.pop(full_path[0])
+            #     self.graph_widget.removeItem(curve)
+            #     self.spectrum_list.takeItem(self.spectrum_list.row(item))
 
 
 #-------------------------------------------------- Application start --------------------------------------------------
@@ -526,6 +541,6 @@ if __name__ == "__main__":
     # set font settings
     app.setFont(QFont(FONT, FONT_SIZE))
     # start in normal mode
-    window = GraphApp(testing=False)
+    window = GraphApp(testing=True)
     window.show()
     sys.exit(app.exec_())

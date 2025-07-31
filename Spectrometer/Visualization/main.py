@@ -15,7 +15,7 @@ from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import BASE_UPLOAD_SPECTRUM_DIR, BASE_SAVE_SPECTRUM_DIR, BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
+from SpectrometerApplication.Constants import EXTERNAL_PROCESS_PATH, BASE_UPLOAD_SPECTRUM_DIR, BASE_SAVE_SPECTRUM_DIR, BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
 # Functions to save spectrum data
 from SpectrometerApplication.WorkWithSpectrumFiles import read_spectrum_from_file, create_full_spectrum_data, generate_spectrum_file_name, save_data_to_folder
 # Application text
@@ -270,6 +270,11 @@ class GraphApp(QWidget):
         self.spectrum_list = QListWidget()
         self.spectrum_list.setSelectionMode(QListWidget.SingleSelection)
 
+        # Button to run external process
+        self.run_external_button = QPushButton(app_text.EXTERNAL_PROCESS_BUTTON[self.language])
+        self.run_external_button.clicked.connect(self.run_external_process)
+
+
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
         control_layout.addLayout(language_layout)
@@ -286,6 +291,7 @@ class GraphApp(QWidget):
         control_layout.addWidget(self.load_spectrum_button)
         control_layout.addWidget(self.remove_spectrum_button)
         control_layout.addWidget(self.spectrum_list)
+        control_layout.addWidget(self.run_external_button)
         control_layout.addStretch()
 
         layout.addWidget(self.graph_widget,4)
@@ -526,12 +532,20 @@ class GraphApp(QWidget):
                 self.spectrum_list.takeItem(self.spectrum_list.row(item))
 
 
-            # filename = item.text()
-            # full_path = [key for key in self.loaded_spectra if os.path.basename(key) == filename]
-            # if full_path:
-            #     curve = self.loaded_spectra.pop(full_path[0])
-            #     self.graph_widget.removeItem(curve)
-            #     self.spectrum_list.takeItem(self.spectrum_list.row(item))
+    # method to run external process (get process path from constants file)
+    def run_external_process(self):
+        process_path = EXTERNAL_PROCESS_PATH
+        argument = self.dir_input
+
+        command = [process_path, argument]
+
+        self.process = QProcess(self)
+        self.process.readyReadStandardOutput.connect(lambda: print(str(self.process.readAllStandardOutput(), encoding='utf-8')))
+        self.process.readyReadStandardError.connect(lambda: print(str(self.process.readAllStandardError(), encoding='utf-8')))
+        self.process.finished.connect(lambda code, status: QMessageBox.information(self, "Process Finished", f"Exit code: {code}"))
+
+        self.process.start(command[0], command[1:])
+
 
 
 #-------------------------------------------------- Application start --------------------------------------------------

@@ -73,6 +73,9 @@ SELECT_SPECTRUM_FILE_WINDOW_NAME = {'en': "Select spectrum files", 'ru': "Выб
 # spectrum remove button text
 SPECTRUM_REMOVE_BUTTON = {'en': "Remove selected spectrum", 'ru': "Удалить выбранный спектр"}
 
+# run external process button text
+EXTERNAL_PROCESS_BUTTON = {'en': "Run External Process", 'ru': "Запустить сторонне прложение"}
+
 # warning title (for all warning windows)
 WARNING_TITLE = {'en': "Warning", 'ru': "Предупреждение"}
 

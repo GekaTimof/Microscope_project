@@ -147,6 +147,7 @@ class GraphApp(QWidget):
         self.loaded_spectra = {}
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
+        self.start_graph_reset = True
 
 
     # method to set application UI
@@ -256,6 +257,7 @@ class GraphApp(QWidget):
         self.theme_button = QPushButton(app_text.SWITCH_TO_DARK_THEME_BUTTON[self.language])
         self.theme_button.setCheckable(True)
         self.theme_button.toggled.connect(self.toggle_theme)
+
         # chek if user set Dark theme like base theme
         if DARK_THEME:
             self.theme_button.toggle()
@@ -345,6 +347,11 @@ class GraphApp(QWidget):
         # set values to graph
         self.curve.setData(x_data, y_data)
         self.update_overillumination_warning(x_data, y_data)
+
+        # reset graph view after values was set at first time
+        if self.start_graph_reset:
+            self.reset_graph_view()
+            self.start_graph_reset = False
 
 
     # function to check overillumination and set/remove warrning

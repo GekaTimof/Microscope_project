@@ -20,10 +20,11 @@ from SpectrometerApplication.Constants import LINE_WIGHT, EXTERNAL_PROCESS_PATH,
 from SpectrometerApplication.WorkWithSpectrumFiles import read_spectrum_from_file, create_full_spectrum_data, generate_spectrum_file_name, save_data_to_folder
 # Application text
 from SpectrometerApplication import TextConstants as app_text
-# (only for testing mode) Links for test data and visual_testing function
+# Links for test data (for empty mode)
 from SpectrometerOptoskyConnection.GetTestData import get_data_from_file
 from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH
-
+# Function to get home directory
+from SpectrometerOptoskyConnection.Get_home_directory import get_home_directory
 
 #------------------------------------------------- Spectrometer thread -------------------------------------------------
 
@@ -146,7 +147,6 @@ class GraphApp(QWidget):
         self.loaded_spectra = {}
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
-
 
 
     # method to set application UI
@@ -312,10 +312,11 @@ class GraphApp(QWidget):
     # method to directory selector
     def select_directory(self):
         # get home directory of user in whose directory the program is located
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        dir_stat = os.stat(script_dir)
-        user_info = pwd.getpwuid(dir_stat.st_uid)
-        home_dir = user_info.pw_dir
+        home_dir = get_home_directory()
+        # script_dir = os.path.dirname(os.path.realpath(__file__))
+        # dir_stat = os.stat(script_dir)
+        # user_info = pwd.getpwuid(dir_stat.st_uid)
+        # home_dir = user_info.pw_dir
 
         options = QFileDialog.Option.DontUseNativeDialog
         options |= QFileDialog.Option.ReadOnly
@@ -372,10 +373,11 @@ class GraphApp(QWidget):
             return
 
         # get home directory of user in whose directory the program is located
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        dir_stat = os.stat(script_dir)
-        user_info = pwd.getpwuid(dir_stat.st_uid)
-        home_dir = user_info.pw_dir
+        home_dir = get_home_directory()
+        # script_dir = os.path.dirname(os.path.realpath(__file__))
+        # dir_stat = os.stat(script_dir)
+        # user_info = pwd.getpwuid(dir_stat.st_uid)
+        # home_dir = user_info.pw_dir
 
         # check that use try to save data to home directory
         if not directory.startswith(home_dir):

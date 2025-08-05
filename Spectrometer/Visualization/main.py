@@ -543,9 +543,12 @@ class GraphApp(QWidget):
             for file_path in files:
                 if file_path not in self.loaded_spectra:
                     x_data, y_data = read_spectrum_from_file(file_path)
+
+                    # generate color for spectrum
                     color = pg.intColor(len(self.loaded_spectra))
                     curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
                     self.loaded_spectra[file_path] = curve
+
                     # get name for spectrum (folder name + file name)
                     folder_name = os.path.basename(os.path.dirname(file_path))
                     file_name = os.path.basename(file_path)
@@ -555,8 +558,13 @@ class GraphApp(QWidget):
                     item = QListWidgetItem(spectrum_name)
                     item.setData(Qt.UserRole, file_path)
 
-                    self.spectrum_list.addItem(item)
+                    # set color for spectrum name
+                    q_color = pg.mkColor(color)
+                    item.setForeground(q_color)
 
+                    self.spectrum_list.addItem(item)
+            # reset graph view, after loading
+            self.reset_graph_view()
 
     # method to remove spectrum from diagram
     def remove_selected_spectrum(self):
@@ -571,6 +579,8 @@ class GraphApp(QWidget):
                 curve = self.loaded_spectra.pop(file_path)
                 self.graph_widget.removeItem(curve)
                 self.spectrum_list.takeItem(self.spectrum_list.row(item))
+            # reset graph view, after removeing
+            self.reset_graph_view()
 
 
     # method to run external process (get process path from constants file)

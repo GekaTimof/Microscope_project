@@ -15,14 +15,14 @@ from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import EXTERNAL_PROCESS_PATH, BASE_UPLOAD_SPECTRUM_DIR, BASE_SAVE_SPECTRUM_DIR, BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
+from SpectrometerApplication.Constants import LINE_WIGHT, EXTERNAL_PROCESS_PATH, BASE_UPLOAD_SPECTRUM_DIR, BASE_SAVE_SPECTRUM_DIR, BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
 # Functions to save spectrum data
 from SpectrometerApplication.WorkWithSpectrumFiles import read_spectrum_from_file, create_full_spectrum_data, generate_spectrum_file_name, save_data_to_folder
 # Application text
 from SpectrometerApplication import TextConstants as app_text
 # (only for testing mode) Links for test data and visual_testing function
 from SpectrometerOptoskyConnection.GetTestData import get_data_from_file
-from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH, TEST_DATA_Y_PATH
+from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH
 
 
 #------------------------------------------------- Spectrometer thread -------------------------------------------------
@@ -31,18 +31,21 @@ from SpectrometerOptoskyConnection.Constants import TEST_DATA_X_PATH, TEST_DATA_
 class DataThread(QThread):
     new_data = pyqtSignal(np.ndarray, np.ndarray)
     # thread initialization
-    def __init__(self, testing: bool = False):
+    def __init__(self):
         super().__init__()
-        self.testing = testing
         self.running = True
         self.mutex = QMutex()
         self.overillumination = False
+        self.empty_mode = False
 
         # start connection to spectrometer
-        if not (self.testing):
+        try:
             self.connection = SpectrometerConnection()
             self.connection.open_spectrometer()
             self.connection.retrieve_and_set_wavelength_range()
+        except:
+            # mode to start app without connection to spectrometer
+            self.empty_mode = True
 
 
     # method to set new dark spectrum
@@ -97,17 +100,16 @@ class DataThread(QThread):
 
     # method to update data in thread
     def run(self):
-        # get test y data (in testing mode)
-        if self.testing:
-            y_data_test = get_data_from_file(TEST_DATA_Y_PATH)
+        # get test y data (in empty mode)
+        if self.empty_mode:
+            empty_x = get_data_from_file(TEST_DATA_X_PATH)
 
         while self.running:
             self.mutex.lock()
-            if self.testing:
-                # get test data from file
-                x_data = get_data_from_file(TEST_DATA_X_PATH)
-                y_data_test += np.random.choice([-10, 10], size=y_data_test.size)
-                y_data = y_data_test
+            if self.empty_mode:
+                # get zero data
+                x_data = empty_x
+                y_data = np.zeros_like(empty_x)
             else:
                 # get real data from spectrometer
                 # send command to updating current_spectrum (get new values from spectrometer)
@@ -137,13 +139,15 @@ class DataThread(QThread):
 
 # Interface for spectrometer application
 class GraphApp(QWidget):
-    def __init__(self, testing: bool = False):
+    def __init__(self):
         super().__init__()
-        self.data_thread = DataThread(testing=testing)
+        self.data_thread = DataThread()
         self.init_ui()
         self.loaded_spectra = {}
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
+
+
 
     # method to set application UI
     def init_ui(self):
@@ -152,6 +156,14 @@ class GraphApp(QWidget):
             self.language = BASE_LANGUAGE
         else:
             self.language = app_text.APPLICATION_LANGUAGES[0]
+
+        # Light them pen stile
+        self.light_them_pen = QPen(Qt.blue)
+        self.light_them_pen.setWidth(LINE_WIGHT)
+
+        # Dark them pen stile
+        self.darek_them_pen = QPen(Qt.yellow)
+        self.darek_them_pen.setWidth(LINE_WIGHT)
 
         # Main Window
         self.setWindowTitle(app_text.WINDOW_TITLE[self.language])
@@ -166,7 +178,7 @@ class GraphApp(QWidget):
         self.graph_widget.showGrid(x=True, y=True, alpha=0.75)
         self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL[self.language])
         self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL[self.language])
-        self.curve = self.graph_widget.plot(pen="b")
+        self.curve = self.graph_widget.plot(pen=self.light_them_pen)
         self.graph_widget.setLimits(minYRange=MIN_GRAPHIC_Y_RANGE)
 
         # Label for overillumination (will appear over graph)
@@ -274,7 +286,6 @@ class GraphApp(QWidget):
         self.run_external_button = QPushButton(app_text.EXTERNAL_PROCESS_BUTTON[self.language])
         self.run_external_button.clicked.connect(self.run_external_process)
 
-
         # Control layout creation (total layout)
         control_layout = QVBoxLayout()
         control_layout.addLayout(language_layout)
@@ -297,7 +308,6 @@ class GraphApp(QWidget):
         layout.addWidget(self.graph_widget,4)
         layout.addLayout(control_layout, 1)
         self.setLayout(layout)
-
 
     # method to directory selector
     def select_directory(self):
@@ -331,8 +341,10 @@ class GraphApp(QWidget):
 
     # method to set X and Y to graph
     def update_graph(self, x_data, y_data):
+        # set values to graph
         self.curve.setData(x_data, y_data)
 
+        # check overillumination
         if self.data_thread.overillumination:
             # set warning positon
             x_center = np.mean(x_data)
@@ -390,13 +402,13 @@ class GraphApp(QWidget):
     def reset_graph_view(self):
         if self.curve is not None:
             data = self.curve.getData()
-            if data is not None and len(data[0]) > 0:
-                x_values, y_values = data
-                min_x, max_x = min(x_values), max(x_values)
-                min_y, max_y = min(y_values), max(y_values)
+            if len(data[0]) > 0:
+                    x_values, y_values = data
+                    min_x, max_x = min(x_values), max(x_values)
+                    min_y, max_y = min(y_values), max(y_values)
 
-                self.graph_widget.setXRange(min_x, max_x)
-                self.graph_widget.setYRange(min_y, max_y)
+                    self.graph_widget.setXRange(min_x, max_x)
+                    self.graph_widget.setYRange(min_y, max_y)
 
 
     # method to get mouse coordinates when it on the graph
@@ -439,7 +451,7 @@ class GraphApp(QWidget):
         self.coord_label.setColor("w")
         self.setStyleSheet(dark_style)
         self.graph_widget.setBackground('k')
-        self.curve.setPen('y')
+        self.curve.setPen(self.darek_them_pen)
 
 
     # method to set light application theme
@@ -447,7 +459,7 @@ class GraphApp(QWidget):
         self.coord_label.setColor("black")
         self.setStyleSheet("")
         self.graph_widget.setBackground('w')
-        self.curve.setPen('b')
+        self.curve.setPen(self.light_them_pen)
 
 
     # method to change application language
@@ -555,6 +567,6 @@ if __name__ == "__main__":
     # set font settings
     app.setFont(QFont(FONT, FONT_SIZE))
     # start in normal mode
-    window = GraphApp(testing=True)
+    window = GraphApp()
     window.show()
     sys.exit(app.exec_())

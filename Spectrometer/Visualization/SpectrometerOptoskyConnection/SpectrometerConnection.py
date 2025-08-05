@@ -117,11 +117,14 @@ class SpectrometerConnection:
         expected_answers = self.Commands[self.Open_spectrometer][1]
 
         # try to connect
-        self.send_command(command_id)
-        # checking connection
-        self.wait_for_response(expected_answers[0], MINIMUM_WAITING_TIME)
-        # skip before next request
-        self.wait_for_response(expected_answers[1], MINIMUM_WAITING_TIME)
+        try:
+            self.send_command(command_id)
+            # checking connection
+            self.wait_for_response(expected_answers[0], MINIMUM_WAITING_TIME)
+            # skip before next request
+            self.wait_for_response(expected_answers[1], MINIMUM_WAITING_TIME)
+        except:
+            raise Exception(f"Can't connect to spectrometer")
         return self
 
 

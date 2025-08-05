@@ -14,7 +14,7 @@ BASE_UPLOAD_SPECTRUM_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrome
 EXTERNAL_PROCESS_PATH = ""
 
 # Set Dark theme like base (True/False)
-DARK_THEME = False
+DARK_THEME = True
 
 # Set base language ("en"/"ru")
 BASE_LANGUAGE = "en"
@@ -24,6 +24,9 @@ FONT_SIZE = 14
 FONT = "Arial"
 WARNING_FONT_SIZE = 24
 COORDINATES_FONT_SIZE = 11
+
+# graph lines settings
+LINE_WIGHT = 2
 
 #---------------------------------------------------- NOT User Zone ----------------------------------------------------
 

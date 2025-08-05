@@ -31,7 +31,7 @@ from SpectrometerOptoskyConnection.Get_home_directory import get_home_directory
 # Thread to connect and get data from spectrometer
 class DataThread(QThread):
     new_data = pyqtSignal(np.ndarray, np.ndarray)
-    # thread initialization
+    # Thread initialization
     def __init__(self):
         super().__init__()
         self.running = True
@@ -49,28 +49,28 @@ class DataThread(QThread):
             self.empty_mode = True
 
 
-    # method to set new dark spectrum
+    # Method to set new dark spectrum
     def set_dark_spectrum(self):
         self.mutex.lock()
         self.connection.retrieve_and_set_dark_spectrum()
         self.mutex.unlock()
 
 
-    # method to clear dark spectrum
+    # Method to clear dark spectrum
     def clear_dark_spectrum(self):
         self.mutex.lock()
         self.connection.clear_dark_spectrum()
         self.mutex.unlock()
 
 
-    # method to set new dark spectrum
+    # Method to set new dark spectrum
     def set_integral_time(self, new_integral_time: int):
         self.mutex.lock()
         self.connection.set_integral_time(new_integral_time)
         self.mutex.unlock()
 
 
-    # method to save spectrum data (X  Y) to chosen folder
+    # Method to save spectrum data (X  Y) to chosen folder
     def save_spectrum_data_to_folder(self, folder):
         self.mutex.lock()
         try:
@@ -99,7 +99,7 @@ class DataThread(QThread):
             return False
 
 
-    # method to update data in thread
+    # Method to update data in thread
     def run(self):
         # get test y data (in empty mode)
         if self.empty_mode:
@@ -129,7 +129,7 @@ class DataThread(QThread):
             self.msleep(1)
 
 
-    # method to stop thread
+    # Method to stop thread
     def stop(self):
         self.running = False
         self.quit()
@@ -148,9 +148,11 @@ class GraphApp(QWidget):
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
         self.start_graph_reset = True
+        # warn user, if application is in empty mode (spectrometer is not connected)
+        self.check_empty_mode()
 
 
-    # method to set application UI
+    # Method to set application UI
     def init_ui(self):
         # Application base language
         if BASE_LANGUAGE in app_text.APPLICATION_LANGUAGES:
@@ -311,7 +313,14 @@ class GraphApp(QWidget):
         layout.addLayout(control_layout, 1)
         self.setLayout(layout)
 
-    # method to directory selector
+    # Method to check and warn the user if the application is running in empty mode
+    def check_empty_mode(self):
+        if self.data_thread.empty_mode:
+            QMessageBox.warning(self, app_text.WARNING_TITLE[self.language],
+                                app_text.WARNING_NO_SPECTROMETER_CONNECTION[self.language])
+
+
+    # Method to directory selector
     def select_directory(self):
         # get home directory of user in whose directory the program is located
         home_dir = get_home_directory()
@@ -331,18 +340,19 @@ class GraphApp(QWidget):
         if directory:
             # check that user try to select folder in home directory
             if not directory.startswith(home_dir):
-                QMessageBox.warning(self, app_text.WARNING_SELECT_OUT_OF_HOME[self.language])
+                QMessageBox.warning(self, app_text.WARNING_TITLE[self.language],
+                                    app_text.WARNING_SELECT_OUT_OF_HOME[self.language])
                 return
 
             self.dir_input.setText(directory)
 
 
-    # method to update integral time
+    # Method to update integral time
     def update_integral_time(self, value):
         self.data_thread.set_integral_time(value)
 
 
-    # method to set X and Y to graph
+    # Method to set X and Y to graph
     def update_graph(self, x_data, y_data):
         # set values to graph
         self.curve.setData(x_data, y_data)
@@ -354,7 +364,7 @@ class GraphApp(QWidget):
             self.start_graph_reset = False
 
 
-    # function to check overillumination and set/remove warning
+    # Method to check overillumination and set/remove warning
     def update_overillumination_warning(self, x_data, y_data):
         if self.data_thread.overillumination:
             # set warning positon
@@ -368,18 +378,19 @@ class GraphApp(QWidget):
             self.overillumination_label.hide()
 
 
-    # method to stap thread (spectrometer connection)
+    # Method to stap thread (spectrometer connection)
     def close_event(self, event):
         self.data_thread.stop()
         event.accept()
 
 
-    # method to save file with data to selected folder
+    # Method to save file with data to selected folder
     def save_spectrum_data(self):
         try:
             directory = self.dir_input.text()
         except:
-            QMessageBox.warning(self, app_text.WARNING_NO_DIRECTORY_SELECTED[self.language])
+            QMessageBox.warning(self, app_text.WARNING_TITLE[self.language],
+                                app_text.WARNING_NO_DIRECTORY_SELECTED[self.language])
             return
 
         # get home directory of user in whose directory the program is located
@@ -391,7 +402,8 @@ class GraphApp(QWidget):
 
         # check that use try to save data to home directory
         if not directory.startswith(home_dir):
-            QMessageBox.warning(self, app_text.WARNING_SAWING_OUT_OF_HOME[self.language])
+            QMessageBox.warning(self, app_text.WARNING_TITLE[self.language],
+                                app_text.WARNING_SAWING_OUT_OF_HOME[self.language])
             return
 
         # Show progress bar and simulate progress
@@ -411,7 +423,7 @@ class GraphApp(QWidget):
             QMessageBox.critical(self, "Error", app_text.CRITICAL_SAVING_FAILED[self.language])
 
 
-    # method to reset graphic zoom
+    # Method to reset graphic zoom
     def reset_graph_view(self):
         all_x = []
         all_y = []
@@ -440,7 +452,7 @@ class GraphApp(QWidget):
             self.graph_widget.setYRange(min_y, max_y)
 
 
-    # method to get mouse coordinates when it on the graph
+    # Method to get mouse coordinates when it on the graph
     def on_mouse_move(self, pos):
         vb = self.graph_widget.getViewBox()
         if vb.sceneBoundingRect().contains(pos):
@@ -464,7 +476,7 @@ class GraphApp(QWidget):
             self.coord_label.hide()
 
 
-    # method to switch theme (Light and Dark)
+    # Method to switch theme (Light and Dark)
     def toggle_theme(self, checked):
         if checked:
             self.set_dark_theme()
@@ -474,7 +486,7 @@ class GraphApp(QWidget):
             self.theme_button.setText(app_text.SWITCH_TO_DARK_THEME_BUTTON[self.language])
 
 
-    # method to set dark application theme
+    # Method to set dark application theme
     def set_dark_theme(self):
         dark_style = DARK_THEME_STYLE
         self.coord_label.setColor("w")
@@ -483,7 +495,7 @@ class GraphApp(QWidget):
         self.curve.setPen(self.darek_theme_pen)
 
 
-    # method to set light application theme
+    # Method to set light application theme
     def set_light_theme(self):
         self.coord_label.setColor("black")
         self.setStyleSheet("")
@@ -491,7 +503,7 @@ class GraphApp(QWidget):
         self.curve.setPen(self.light_theme_pen)
 
 
-    # method to change application language
+    # Method to change application language
     def change_language(self, selected_language):
         if selected_language != self.language:
             reply = QMessageBox.warning(
@@ -509,7 +521,7 @@ class GraphApp(QWidget):
                 self.language_combo.setCurrentText(self.language)
 
 
-    # method to change base language constant (BASE_LANGUAGE)
+    # Method to change base language constant (BASE_LANGUAGE)
     def update_base_language_constant(self, new_language):
         constants_path = os.path.join(os.path.dirname(__file__), "SpectrometerApplication" ,"Constants.py")
         with open(constants_path, "r") as file:
@@ -523,13 +535,13 @@ class GraphApp(QWidget):
                     file.write(line)
 
 
-    # method to restart all application
+    # Method to restart all application
     def restart_application(self):
         QApplication.quit()
         QProcess.startDetached(sys.executable, sys.argv)
 
 
-    # method to load saved spectrum to diagram
+    # Method to load saved spectrum to diagram
     def load_spectrum_file(self):
         dialog = QFileDialog(self)
         dialog.setWindowTitle(app_text.SELECT_SPECTRUM_FILE_WINDOW_NAME[self.language])
@@ -566,7 +578,7 @@ class GraphApp(QWidget):
             # reset graph view, after loading
             self.reset_graph_view()
 
-    # method to remove spectrum from diagram
+    # Method to remove spectrum from diagram
     def remove_selected_spectrum(self):
         selected_items = self.spectrum_list.selectedItems()
         if selected_items:
@@ -583,7 +595,7 @@ class GraphApp(QWidget):
             self.reset_graph_view()
 
 
-    # method to run external process (get process path from constants file)
+    # Method to run external process (get process path from constants file)
     def run_external_process(self):
         process_path = EXTERNAL_PROCESS_PATH
         argument = self.dir_input

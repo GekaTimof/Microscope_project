@@ -82,3 +82,6 @@ WARNING_TITLE = {'en': "Warning", 'ru': "Предупреждение"}
 # warn user that application will be quit, and new settings take effect after restart
 WARNING_LANGUAGE_CHANGE_REQUIRES_RESTART = {'en': "After changing language application will be closed. Changes take effect after restart.",
                                 'ru': "При смене языка приложение будет закрыто. Изменения вступят в силу после перезапуска."}
+
+WARNING_NO_SPECTROMETER_CONNECTION = {'en': "Spectrometer is not connected, the application is running in an empty mode",
+                                      'ru': "Спекстрометер не подключен, приложение запущено в пустом моде"}

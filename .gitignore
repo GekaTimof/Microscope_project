@@ -383,3 +383,12 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,c,python,c++,pycharm
+!/Spectrometer/save_data_folder/
+/Versions/
+/Spectrometer/save_data_folder/
+/Spectrometer/Visualization/np
+/Spectrometer/Visualization/os
+/Spectrometer/Visualization/pwd
+/Spectrometer/Visualization/sys
+/Spectrometer/Visualization/time
+/Document/.~lock.Microscope.pptx#

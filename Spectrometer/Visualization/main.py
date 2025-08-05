@@ -157,13 +157,13 @@ class GraphApp(QWidget):
         else:
             self.language = app_text.APPLICATION_LANGUAGES[0]
 
-        # Light them pen stile
-        self.light_them_pen = QPen(Qt.blue)
-        self.light_them_pen.setWidth(LINE_WIGHT)
+        # Light theme pen stile
+        self.light_theme_pen = QPen(Qt.blue)
+        self.light_theme_pen.setWidth(LINE_WIGHT)
 
         # Dark them pen stile
-        self.darek_them_pen = QPen(Qt.yellow)
-        self.darek_them_pen.setWidth(LINE_WIGHT)
+        self.darek_theme_pen = QPen(Qt.yellow)
+        self.darek_theme_pen.setWidth(LINE_WIGHT)
 
         # Main Window
         self.setWindowTitle(app_text.WINDOW_TITLE[self.language])
@@ -178,7 +178,7 @@ class GraphApp(QWidget):
         self.graph_widget.showGrid(x=True, y=True, alpha=0.75)
         self.graph_widget.setLabel("left", app_text.LEFT_GRAPHIC_LABEL[self.language])
         self.graph_widget.setLabel("bottom", app_text.BOTTOM_GRAPHIC_LABEL[self.language])
-        self.curve = self.graph_widget.plot(pen=self.light_them_pen)
+        self.curve = self.graph_widget.plot(pen=self.light_theme_pen)
         self.graph_widget.setLimits(minYRange=MIN_GRAPHIC_Y_RANGE)
 
         # Label for overillumination (will appear over graph)
@@ -453,7 +453,7 @@ class GraphApp(QWidget):
         self.coord_label.setColor("w")
         self.setStyleSheet(dark_style)
         self.graph_widget.setBackground('k')
-        self.curve.setPen(self.darek_them_pen)
+        self.curve.setPen(self.darek_theme_pen)
 
 
     # method to set light application theme
@@ -461,7 +461,7 @@ class GraphApp(QWidget):
         self.coord_label.setColor("black")
         self.setStyleSheet("")
         self.graph_widget.setBackground('w')
-        self.curve.setPen(self.light_them_pen)
+        self.curve.setPen(self.light_theme_pen)
 
 
     # method to change application language

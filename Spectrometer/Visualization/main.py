@@ -354,7 +354,7 @@ class GraphApp(QWidget):
             self.start_graph_reset = False
 
 
-    # function to check overillumination and set/remove warrning
+    # function to check overillumination and set/remove warning
     def update_overillumination_warning(self, x_data, y_data):
         if self.data_thread.overillumination:
             # set warning positon
@@ -410,17 +410,44 @@ class GraphApp(QWidget):
         if not success:
             QMessageBox.critical(self, "Error", app_text.CRITICAL_SAVING_FAILED[self.language])
 
+
     # method to reset graphic zoom
     def reset_graph_view(self):
-        if self.curve is not None:
-            data = self.curve.getData()
-            if len(data[0]) > 0:
-                    x_values, y_values = data
-                    min_x, max_x = min(x_values), max(x_values)
-                    min_y, max_y = min(y_values), max(y_values)
+        all_x = []
+        all_y = []
 
-                    self.graph_widget.setXRange(min_x, max_x)
-                    self.graph_widget.setYRange(min_y, max_y)
+        # add current spectrum values
+        if self.curve is not None:
+            x_data, y_data = self.curve.getData()
+            if len(x_data) > 0:
+                all_x.extend(x_data)
+                all_y.extend(y_data)
+
+        # add applodite spectrum values
+        for curve in self.loaded_spectra.values():
+            x_data, y_data = curve.getData()
+            if len(x_data) > 0:
+                all_x.extend(x_data)
+                all_y.extend(y_data)
+
+        # set zoom (if ve get something on graph)
+        if all_x and all_y:
+            min_x, max_x = min(all_x), max(all_x)
+            min_y, max_y = min(all_y), max(all_y)
+
+            # set diapason
+            self.graph_widget.setXRange(min_x, max_x)
+            self.graph_widget.setYRange(min_y, max_y)
+
+        # if self.curve is not None:
+        #     data = self.curve.getData()
+        #     if len(data[0]) > 0:
+        #             x_values, y_values = data
+        #             min_x, max_x = min(x_values), max(x_values)
+        #             min_y, max_y = min(y_values), max(y_values)
+        #
+        #             self.graph_widget.setXRange(min_x, max_x)
+        #             self.graph_widget.setYRange(min_y, max_y)
 
 
     # method to get mouse coordinates when it on the graph

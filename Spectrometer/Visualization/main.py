@@ -5,7 +5,7 @@ import pwd
 import time
 import numpy as np
 from PyQt5.QtWidgets import QListWidgetItem, QListWidget, QComboBox, QProgressBar, QApplication, QWidget, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QSpinBox, QLabel, \
-    QPushButton, QShortcut, QMessageBox, QGraphicsProxyWidget
+    QPushButton, QShortcut, QMessageBox
 from PyQt5.QtCore import Qt, QProcess, QThread, pyqtSignal, QMutex
 import pyqtgraph as pg
 from PyQt5.QtGui import QPen, QIcon, QKeySequence, QFont
@@ -344,8 +344,11 @@ class GraphApp(QWidget):
     def update_graph(self, x_data, y_data):
         # set values to graph
         self.curve.setData(x_data, y_data)
+        self.update_overillumination_warning(x_data, y_data)
 
-        # check overillumination
+
+    # function to check overillumination and set/remove warrning
+    def update_overillumination_warning(self, x_data, y_data):
         if self.data_thread.overillumination:
             # set warning positon
             x_center = np.mean(x_data)
@@ -551,7 +554,7 @@ class GraphApp(QWidget):
         process_path = EXTERNAL_PROCESS_PATH
         argument = self.dir_input
 
-        command = [process_path, argument]
+        command = [process_path, argument.text()]
 
         self.process = QProcess(self)
         self.process.readyReadStandardOutput.connect(lambda: print(str(self.process.readAllStandardOutput(), encoding='utf-8')))

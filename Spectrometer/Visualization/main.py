@@ -423,7 +423,7 @@ class GraphApp(QWidget):
                 all_x.extend(x_data)
                 all_y.extend(y_data)
 
-        # add applodite spectrum values
+        # add uploaded spectrum values
         for curve in self.loaded_spectra.values():
             x_data, y_data = curve.getData()
             if len(x_data) > 0:
@@ -438,16 +438,6 @@ class GraphApp(QWidget):
             # set diapason
             self.graph_widget.setXRange(min_x, max_x)
             self.graph_widget.setYRange(min_y, max_y)
-
-        # if self.curve is not None:
-        #     data = self.curve.getData()
-        #     if len(data[0]) > 0:
-        #             x_values, y_values = data
-        #             min_x, max_x = min(x_values), max(x_values)
-        #             min_y, max_y = min(y_values), max(y_values)
-        #
-        #             self.graph_widget.setXRange(min_x, max_x)
-        #             self.graph_widget.setYRange(min_y, max_y)
 
 
     # method to get mouse coordinates when it on the graph

@@ -80,7 +80,7 @@ SELECT_SPECTRUM_FILE_WINDOW_NAME = {'en': "Select spectrum files", 'ru': "Выб
 SPECTRUM_REMOVE_BUTTON = {'en': "Remove selected spectrum", 'ru': "Удалить выбранный спектр"}
 
 # run external process button text
-EXTERNAL_PROCESS_BUTTON = {'en': "Run External Process", 'ru': "Запустить сторонне прложение"}
+EXTERNAL_PROCESS_BUTTON = {'en': "Generate Scilab script", 'ru': "Генерация Scilab скрипта"}
 
 # warning title (for all warning windows)
 WARNING_TITLE = {'en': "Warning", 'ru': "Предупреждение"}

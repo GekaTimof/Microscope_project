@@ -147,6 +147,7 @@ class GraphApp(QWidget):
         self.loaded_spectra = {}
         self.data_thread.new_data.connect(self.update_graph)
         self.data_thread.start()
+        self.color_counter = 0
         self.start_graph_reset = True
         # warn user, if application is in empty mode (spectrometer is not connected)
         self.check_empty_mode()
@@ -554,7 +555,8 @@ class GraphApp(QWidget):
                                             app_text.WARNING_WRONG_DATA_FILE[self.language])
                     else:
                         # generate color for spectrum
-                        color = pg.intColor(len(self.loaded_spectra))
+                        color = pg.intColor(self.color_counter)
+                        self.color_counter += 1
                         curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
                         self.loaded_spectra[file_path] = curve
 

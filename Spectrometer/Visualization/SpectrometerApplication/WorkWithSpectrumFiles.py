@@ -12,7 +12,7 @@ def generate_spectrum_data_array(x_data: np.array, y_data: np.array):
     if x_data.size == y_data.size:
         text_array = []
         for i, elem in enumerate(x_data):
-            text_array.append(f"{x_data[i]}  {y_data[i]}")
+            text_array.append(f"{x_data[i]} {y_data[i]}")
         return text_array
     else:
         return None
@@ -80,4 +80,10 @@ def read_spectrum_from_file(file_path):
                         y_data.append(y)
                     except ValueError:
                         continue
+
+    # check that we get data
+    if len(x_data) == 0:
+        x_data = None
+    if len(y_data) == 0:
+        y_data = None
     return x_data, y_data

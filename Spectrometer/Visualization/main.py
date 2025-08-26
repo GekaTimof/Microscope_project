@@ -438,7 +438,8 @@ class GraphApp(QWidget):
         # add uploaded spectrum values
         for curve in self.loaded_spectra.values():
             x_data, y_data = curve.getData()
-            if len(x_data) > 0:
+
+            if x_data.shape[0] > 0:
                 all_x.extend(x_data)
                 all_y.extend(y_data)
 
@@ -555,26 +556,30 @@ class GraphApp(QWidget):
             for file_path in files:
                 if file_path not in self.loaded_spectra:
                     x_data, y_data = read_spectrum_from_file(file_path)
+                    # if wrong data file
+                    if x_data is None or y_data is None:
+                        QMessageBox.warning(self, app_text.WARNING_TITLE[self.language],
+                                            app_text.WARNING_WRONG_DATA_FILE[self.language])
+                    else:
+                        # generate color for spectrum
+                        color = pg.intColor(len(self.loaded_spectra))
+                        curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
+                        self.loaded_spectra[file_path] = curve
 
-                    # generate color for spectrum
-                    color = pg.intColor(len(self.loaded_spectra))
-                    curve = self.graph_widget.plot(x_data, y_data, pen=color, name=os.path.basename(file_path))
-                    self.loaded_spectra[file_path] = curve
+                        # get name for spectrum (folder name + file name)
+                        folder_name = os.path.basename(os.path.dirname(file_path))
+                        file_name = os.path.basename(file_path)
+                        spectrum_name = f"{folder_name}/{file_name}"
 
-                    # get name for spectrum (folder name + file name)
-                    folder_name = os.path.basename(os.path.dirname(file_path))
-                    file_name = os.path.basename(file_path)
-                    spectrum_name = f"{folder_name}/{file_name}"
+                        # create QListWidgetItem and attach full path
+                        item = QListWidgetItem(spectrum_name)
+                        item.setData(Qt.UserRole, file_path)
 
-                    # create QListWidgetItem and attach full path
-                    item = QListWidgetItem(spectrum_name)
-                    item.setData(Qt.UserRole, file_path)
+                        # set color for spectrum name
+                        q_color = pg.mkColor(color)
+                        item.setForeground(q_color)
 
-                    # set color for spectrum name
-                    q_color = pg.mkColor(color)
-                    item.setForeground(q_color)
-
-                    self.spectrum_list.addItem(item)
+                        self.spectrum_list.addItem(item)
             # reset graph view, after loading
             self.reset_graph_view()
 
@@ -591,7 +596,7 @@ class GraphApp(QWidget):
                 curve = self.loaded_spectra.pop(file_path)
                 self.graph_widget.removeItem(curve)
                 self.spectrum_list.takeItem(self.spectrum_list.row(item))
-            # reset graph view, after removeing
+            # reset graph view, after removing
             self.reset_graph_view()
 
 

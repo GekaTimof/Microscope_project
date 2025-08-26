@@ -42,6 +42,12 @@ CRITICAL_SAVING_FAILED = {
     'ru': "Не удалось сохранить спектральные данные."
 }
 
+# can't input data from file
+WARNING_WRONG_DATA_FILE = {
+    'en': "Error in file.\n⚠ Failed to extract contents!",
+    'ru': "Ошибка в файле.\n⚠ не удалось извлечь содержимое!"
+}
+
 # input field to set integral time text
 INPUT_INTEGRAL_TIME_LABEL = {'en': "Integral Time (ms):", 'ru': "Время накопления (мс):"}
 

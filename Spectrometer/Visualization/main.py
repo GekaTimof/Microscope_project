@@ -284,7 +284,7 @@ class GraphApp(QWidget):
 
         # List to select spectrum to remove
         self.spectrum_list = QListWidget()
-        self.spectrum_list.setSelectionMode(QListWidget.SingleSelection)
+        self.spectrum_list.setSelectionMode(QListWidget.MultiSelection)
 
         # Button to run external process
         self.run_external_button = QPushButton(app_text.EXTERNAL_PROCESS_BUTTON[self.language])
@@ -324,10 +324,6 @@ class GraphApp(QWidget):
     def select_directory(self):
         # get home directory of user in whose directory the program is located
         home_dir = get_home_directory()
-        # script_dir = os.path.dirname(os.path.realpath(__file__))
-        # dir_stat = os.stat(script_dir)
-        # user_info = pwd.getpwuid(dir_stat.st_uid)
-        # home_dir = user_info.pw_dir
 
         options = QFileDialog.Option.DontUseNativeDialog
         options |= QFileDialog.Option.ReadOnly
@@ -395,10 +391,6 @@ class GraphApp(QWidget):
 
         # get home directory of user in whose directory the program is located
         home_dir = get_home_directory()
-        # script_dir = os.path.dirname(os.path.realpath(__file__))
-        # dir_stat = os.stat(script_dir)
-        # user_info = pwd.getpwuid(dir_stat.st_uid)
-        # home_dir = user_info.pw_dir
 
         # check that use try to save data to home directory
         if not directory.startswith(home_dir):
@@ -583,19 +575,19 @@ class GraphApp(QWidget):
             # reset graph view, after loading
             self.reset_graph_view()
 
+
     # Method to remove spectrum from diagram
     def remove_selected_spectrum(self):
         selected_items = self.spectrum_list.selectedItems()
         if selected_items:
-            item = selected_items[0]
+            for item in selected_items:
+                # retrieve the full path stored in item
+                file_path = item.data(Qt.UserRole)
 
-            # retrieve the full path stored in item
-            file_path = item.data(Qt.UserRole)
-
-            if file_path in self.loaded_spectra:
-                curve = self.loaded_spectra.pop(file_path)
-                self.graph_widget.removeItem(curve)
-                self.spectrum_list.takeItem(self.spectrum_list.row(item))
+                if file_path in self.loaded_spectra:
+                    curve = self.loaded_spectra.pop(file_path)
+                    self.graph_widget.removeItem(curve)
+                    self.spectrum_list.takeItem(self.spectrum_list.row(item))
             # reset graph view, after removing
             self.reset_graph_view()
 

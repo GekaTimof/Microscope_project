@@ -23,7 +23,7 @@ WARNING_FONT_SIZE = 24
 COORDINATES_FONT_SIZE = 11
 
 # graph lines settings
-LINE_WIGHT = 2
+LINE_WIGHT = 3
 
 #---------------------------------------------------- NOT User Zone ----------------------------------------------------
 

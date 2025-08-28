@@ -20,7 +20,7 @@ def generate_spectrum_data_array(x_data: np.array, y_data: np.array):
 
 # function to generate name for file with data from spectrometer
 def generate_spectrum_file_name(prefix: str = ""):
-    name = prefix + str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S:%f')) + ".txt"
+    name = prefix + str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f')) + ".txt"
     return name
 
 

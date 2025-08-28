@@ -5,10 +5,7 @@ from SpectrometerApplication.TextConstants import EXTERNAL_PROCESS_BUTTON
 #------------------------------------------------------ User Zone ------------------------------------------------------
 
 # Path to base save directory (directory to save spectrum datas)
-BASE_SAVE_SPECTRUM_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrometer/save_data_folder"
-
-# Path to base spectrum upload directory (directory to get file with spectrum data)
-BASE_UPLOAD_SPECTRUM_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrometer/save_data_folder"
+BASE_FILES_DIR = "/home/evgeniy/Documents/Microscope_project/Spectrometer/save_data_folder"
 
 # Path to start external process
 EXTERNAL_PROCESS_PATH = ""

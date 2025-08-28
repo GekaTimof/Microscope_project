@@ -15,7 +15,7 @@ from SpectrometerOptoskyConnection import SpectrometerConnection
 # Spectrometer params (constants)
 from SpectrometerOptoskyConnection.Constants import MAX_INTEGRAL_TIME, START_INTEGRAL_TIME
 # Links to assets
-from SpectrometerApplication.Constants import LINE_WIGHT, EXTERNAL_PROCESS_PATH, BASE_UPLOAD_SPECTRUM_DIR, BASE_SAVE_SPECTRUM_DIR, BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
+from SpectrometerApplication.Constants import LINE_WIGHT, EXTERNAL_PROCESS_PATH, BASE_FILES_DIR, BASE_LANGUAGE, DARK_THEME_STYLE, DARK_THEME, APP_ICON, MIN_GRAPHIC_Y_RANGE, FONT, FONT_SIZE, WARNING_FONT_SIZE, COORDINATES_FONT_SIZE
 # Functions to save spectrum data
 from SpectrometerApplication.WorkWithSpectrumFiles import read_spectrum_from_file, create_full_spectrum_data, generate_spectrum_file_name, save_data_to_folder
 # Application text
@@ -232,8 +232,8 @@ class GraphApp(QWidget):
         dir_layout.addWidget(self.dir_input)
         dir_layout.addWidget(self.dir_button)
         # check if user set base dir in constants
-        if os.path.isdir(BASE_SAVE_SPECTRUM_DIR):
-            self.dir_input.setText(BASE_SAVE_SPECTRUM_DIR)
+        if os.path.isdir(BASE_FILES_DIR):
+            self.dir_input.setText(BASE_FILES_DIR)
 
         # Button to save spectrum data
         self.save_button = QPushButton(app_text.SAVE_SPECTROMETER_DATA_BUTTON[self.language])
@@ -539,7 +539,7 @@ class GraphApp(QWidget):
     def load_spectrum_file(self):
         dialog = QFileDialog(self)
         dialog.setWindowTitle(app_text.SELECT_SPECTRUM_FILE_WINDOW_NAME[self.language])
-        dialog.setDirectory(BASE_UPLOAD_SPECTRUM_DIR if os.path.isdir(BASE_UPLOAD_SPECTRUM_DIR) else "")
+        dialog.setDirectory(self.dir_input.text() if os.path.isdir(self.dir_input.text()) else "")
         dialog.setNameFilter("Text Files (*.txt *.csv)")
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setOption(QFileDialog.DontUseNativeDialog, True)

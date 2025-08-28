@@ -8,7 +8,7 @@
 В файл run.sh написать путь запуска программы:
 
     \#!/bin/bash
-    sudo -E python3 путь_к/Visualisation/main.py
+    sudo python3 путь_к/Visualisation/main.py
 
 
 ## Запуск без пароля
@@ -44,6 +44,17 @@
 *Подставте пути к файлу python3 и main.py 
 
 
+Запрет редактирования файлов программы в Spectrometer
+
+    sudo chmod -R 755 Spectrometer
+
+
+Разрешаем редактирование файлов нужныйх для кастомизации приложения
+
+    sudo chattr -i /Visualization/SpectrometerApplication и открыть файл Constants.py
+
+
+
 ## Создание ярлыка
 
 Откройте терминал и введите:
@@ -77,18 +88,10 @@
  
     
 # Настройка приложения под себя
-## Настройка папки соранения спектральных файлов
+## Настройка папки сохранения и загрузки спектральных файлов
 Перейти в папку **/Visualization/SpectrometerApplication и открыть файл Constants.py**
 
-Найти строку **BASE_SAVE_SPECTRUM_DIR = "..."**
-
-Вписать в нужный путь **вместо "..."**
-
-
-## Настройка папки загрузки спектральных файлов (для отображения на графике)
-Перейти в папку **/Visualization/SpectrometerApplication и открыть файл Constants.py**
-
-Найти строку **BASE_UPLOAD_SPECTRUM_DIR = "..."**
+Найти строку **BASE_FILES_DIR = "..."**
 
 Вписать в нужный путь **вместо "..."**
 
